@@ -1,38 +1,133 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { users, rooms, reservations, menuItems, orders, orderItems, type User, type InsertUser, type Room, type Reservation, type MenuItem, type Order, type OrderItem } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
+import session from "express-session";
+import connectPg from "connect-pg-simple";
+import { pool } from "./db";
 
-// modify the interface with any CRUD methods
-// you might need
+const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
+  getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+
+  getRooms(): Promise<Room[]>;
+  getRoom(id: number): Promise<Room | undefined>;
+  createRoom(room: typeof rooms.$inferInsert): Promise<Room>;
+  updateRoom(id: number, updates: Partial<typeof rooms.$inferInsert>): Promise<Room | undefined>;
+
+  getReservations(): Promise<Reservation[]>;
+  createReservation(reservation: typeof reservations.$inferInsert): Promise<Reservation>;
+  updateReservationStatus(id: number, status: string): Promise<Reservation | undefined>;
+
+  getMenuItems(): Promise<MenuItem[]>;
+  createMenuItem(item: typeof menuItems.$inferInsert): Promise<MenuItem>;
+
+  getOrders(): Promise<Order[]>;
+  createOrder(order: typeof orders.$inferInsert, items: { menuItemId: number; quantity: number }[]): Promise<Order>;
+  updateOrderStatus(id: number, status: string): Promise<Order | undefined>;
+
+  sessionStore: session.Store;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
+export class DatabaseStorage implements IStorage {
+  sessionStore: session.Store;
 
   constructor() {
-    this.users = new Map();
+    this.sessionStore = new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true,
+    });
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db.insert(users).values(insertUser).returning();
     return user;
+  }
+
+  async getRooms(): Promise<Room[]> {
+    return await db.select().from(rooms);
+  }
+
+  async getRoom(id: number): Promise<Room | undefined> {
+    const [room] = await db.select().from(rooms).where(eq(rooms.id, id));
+    return room;
+  }
+
+  async createRoom(room: typeof rooms.$inferInsert): Promise<Room> {
+    const [newRoom] = await db.insert(rooms).values(room).returning();
+    return newRoom;
+  }
+
+  async updateRoom(id: number, updates: Partial<typeof rooms.$inferInsert>): Promise<Room | undefined> {
+    const [updatedRoom] = await db.update(rooms).set(updates).where(eq(rooms.id, id)).returning();
+    return updatedRoom;
+  }
+
+  async getReservations(): Promise<Reservation[]> {
+    return await db.select().from(reservations);
+  }
+
+  async createReservation(reservation: typeof reservations.$inferInsert): Promise<Reservation> {
+    const [newReservation] = await db.insert(reservations).values(reservation).returning();
+    return newReservation;
+  }
+
+  async updateReservationStatus(id: number, status: string): Promise<Reservation | undefined> {
+    const [updated] = await db.update(reservations).set({ status }).where(eq(reservations.id, id)).returning();
+    return updated;
+  }
+
+  async getMenuItems(): Promise<MenuItem[]> {
+    return await db.select().from(menuItems);
+  }
+
+  async createMenuItem(item: typeof menuItems.$inferInsert): Promise<MenuItem> {
+    const [newItem] = await db.insert(menuItems).values(item).returning();
+    return newItem;
+  }
+
+  async getOrders(): Promise<Order[]> {
+    return await db.select().from(orders);
+  }
+
+  async createOrder(order: typeof orders.$inferInsert, items: { menuItemId: number; quantity: number }[]): Promise<Order> {
+    const [newOrder] = await db.insert(orders).values(order).returning();
+    
+    // Fetch menu item prices to record priceAtTime
+    const menuItemIds = items.map(i => i.menuItemId);
+    // Note: In a real app we'd fetch prices. For MVP assuming prices are stable or fetching one by one. 
+    // Let's do a simple loop or assumed passed prices? No, best to fetch.
+    // For MVP, let's assume we can get them.
+    for (const item of items) {
+       const [menuItem] = await db.select().from(menuItems).where(eq(menuItems.id, item.menuItemId));
+       if (menuItem) {
+         await db.insert(orderItems).values({
+            orderId: newOrder.id,
+            menuItemId: item.menuItemId,
+            quantity: item.quantity,
+            priceAtTime: menuItem.price
+         });
+       }
+    }
+    return newOrder;
+  }
+
+  async updateOrderStatus(id: number, status: string): Promise<Order | undefined> {
+    const [updated] = await db.update(orders).set({ status }).where(eq(orders.id, id)).returning();
+    return updated;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
