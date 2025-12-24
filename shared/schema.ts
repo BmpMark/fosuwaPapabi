@@ -2,6 +2,7 @@ import { pgTable, text, serial, integer, boolean, timestamp, decimal, date, varc
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
+import { users } from "./models/auth";
 
 // Export auth models from shared/models/auth
 export * from "./models/auth";
@@ -87,7 +88,6 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
 }));
 
 // Export types
-export type User = typeof users.$inferSelect;
 export type Room = typeof rooms.$inferSelect;
 export type Reservation = typeof reservations.$inferSelect;
 export type MenuItem = typeof menuItems.$inferSelect;
