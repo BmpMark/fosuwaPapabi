@@ -18,6 +18,24 @@ export const errorSchemas = {
 };
 
 export const api = {
+  auth: {
+    user: {
+      method: 'GET' as const,
+      path: '/api/auth/user',
+      responses: {
+        200: z.object({
+          id: z.string(),
+          email: z.string().nullable(),
+          firstName: z.string().nullable(),
+          lastName: z.string().nullable(),
+          profileImageUrl: z.string().nullable(),
+          createdAt: z.date(),
+          updatedAt: z.date(),
+        }),
+        401: errorSchemas.unauthorized,
+      },
+    },
+  },
   rooms: {
     list: {
       method: 'GET' as const,
