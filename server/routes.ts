@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
-import { setupAuth } from "./auth";
+import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { api } from "@shared/routes";
 import { z } from "zod";
 
@@ -9,7 +9,9 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  setupAuth(app);
+  // Setup Replit Auth BEFORE other routes
+  await setupAuth(app);
+  registerAuthRoutes(app);
 
   // Rooms
   app.get(api.rooms.list.path, async (req, res) => {

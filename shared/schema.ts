@@ -1,18 +1,10 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal, date } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, decimal, date, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 
-// Users
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-  role: text("role").notNull().default("guest"), // guest, staff, admin
-  name: text("name").notNull(),
-});
-
-export const insertUserSchema = createInsertSchema(users).omit({ id: true });
+// Export auth models from shared/models/auth
+export * from "./models/auth";
 
 // Rooms
 export const rooms = pgTable("rooms", {
@@ -30,7 +22,7 @@ export const insertRoomSchema = createInsertSchema(rooms).omit({ id: true });
 // Reservations
 export const reservations = pgTable("reservations", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: varchar("user_id").notNull(), // UUID from auth users table
   roomId: integer("room_id").notNull(),
   checkIn: date("check_in").notNull(),
   checkOut: date("check_out").notNull(),
@@ -55,7 +47,7 @@ export const insertMenuItemSchema = createInsertSchema(menuItems).omit({ id: tru
 // Orders
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id"), // Nullable for walk-in? Let's say required for now or handled by staff
+  userId: varchar("user_id"), // UUID from auth users table, nullable for walk-ins
   roomId: integer("room_id"), // Optional: if room service
   type: text("type").notNull(), // dine_in, room_service
   status: text("status").notNull().default("pending"), // pending, preparing, delivered, completed, billed

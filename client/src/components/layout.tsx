@@ -2,8 +2,16 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import {
-  Menu, X, Home, Bed, Coffee, User, LogOut,
-  LayoutDashboard, ShoppingBag, CalendarCheck
+  Menu,
+  X,
+  Home,
+  Bed,
+  Coffee,
+  User,
+  LogOut,
+  LayoutDashboard,
+  ShoppingBag,
+  CalendarCheck,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -34,10 +42,10 @@ export function Navbar() {
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer group">
               <div className="w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-display font-bold text-xl group-hover:scale-110 transition-transform">
-                L
+                F
               </div>
               <span className="font-display font-bold text-2xl tracking-tight text-primary">
-                Lumière
+                FOSUA PAPABI
               </span>
             </div>
           </Link>
@@ -46,10 +54,14 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-8">
             {links.map((link) => (
               <Link key={link.href} href={link.href}>
-                <div className={cn(
-                  "cursor-pointer text-sm font-medium transition-colors hover:text-primary",
-                  location === link.href ? "text-primary" : "text-muted-foreground"
-                )}>
+                <div
+                  className={cn(
+                    "cursor-pointer text-sm font-medium transition-colors hover:text-primary",
+                    location === link.href
+                      ? "text-primary"
+                      : "text-muted-foreground",
+                  )}
+                >
                   {link.label}
                 </div>
               </Link>
@@ -58,7 +70,10 @@ export function Navbar() {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Button
+                    variant="ghost"
+                    className="relative h-10 w-10 rounded-full"
+                  >
                     <Avatar className="h-10 w-10 border border-border">
                       <AvatarFallback className="bg-primary/10 text-primary">
                         {user.name.charAt(0).toUpperCase()}
@@ -83,7 +98,10 @@ export function Navbar() {
               </DropdownMenu>
             ) : (
               <Link href="/login">
-                <Button variant="default" className="rounded-full px-6 font-semibold">
+                <Button
+                  variant="default"
+                  className="rounded-full px-6 font-semibold"
+                >
                   Sign In
                 </Button>
               </Link>
@@ -92,8 +110,16 @@ export function Navbar() {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden">
-            <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)}>
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              {isOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </Button>
           </div>
         </div>
@@ -105,7 +131,7 @@ export function Navbar() {
           <div className="space-y-1 px-4 py-6">
             {links.map((link) => (
               <Link key={link.href} href={link.href}>
-                <div 
+                <div
                   className="flex items-center gap-3 px-4 py-3 text-base font-medium text-foreground hover:bg-muted rounded-lg cursor-pointer"
                   onClick={() => setIsOpen(false)}
                 >
@@ -117,7 +143,7 @@ export function Navbar() {
             {user ? (
               <>
                 <Link href="/dashboard">
-                  <div 
+                  <div
                     className="flex items-center gap-3 px-4 py-3 text-base font-medium text-primary hover:bg-muted rounded-lg cursor-pointer"
                     onClick={() => setIsOpen(false)}
                   >
@@ -125,9 +151,12 @@ export function Navbar() {
                     Dashboard
                   </div>
                 </Link>
-                <div 
+                <div
                   className="flex items-center gap-3 px-4 py-3 text-base font-medium text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
-                  onClick={() => { logout.mutate(); setIsOpen(false); }}
+                  onClick={() => {
+                    logout.mutate();
+                    setIsOpen(false);
+                  }}
                 >
                   <LogOut className="h-5 w-5" />
                   Log out
@@ -135,7 +164,7 @@ export function Navbar() {
               </>
             ) : (
               <Link href="/login">
-                <div 
+                <div
                   className="flex items-center gap-3 px-4 py-3 text-base font-medium text-primary hover:bg-muted rounded-lg cursor-pointer"
                   onClick={() => setIsOpen(false)}
                 >
@@ -156,29 +185,48 @@ export function Footer() {
     <footer className="bg-primary text-primary-foreground py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-12">
         <div className="space-y-4">
-          <h3 className="font-display text-2xl font-bold">Lumière</h3>
+          <h3 className="font-display text-2xl font-bold">FOSUA PAPABI</h3>
           <p className="text-primary-foreground/70 leading-relaxed">
-            Experience luxury and comfort in the heart of the city. A boutique hotel designed for memories.
+            Experience luxury and comfort in the heart of the city. A hotel
+            designed for memories.
           </p>
         </div>
         <div>
-          <h4 className="font-bold mb-4 uppercase tracking-wider text-sm">Contact</h4>
+          <h4 className="font-bold mb-4 uppercase tracking-wider text-sm">
+            Contact
+          </h4>
           <ul className="space-y-2 text-primary-foreground/70">
-            <li>123 Luxury Ave, NY</li>
-            <li>+1 (555) 000-0000</li>
-            <li>stay@lumiere.com</li>
+            <li>Kwafokrom, off Nsawam-Accra road</li>
+            <li>+233 54845 7017</li>
+            <li>stay@fosua.com</li>
           </ul>
         </div>
         <div>
-          <h4 className="font-bold mb-4 uppercase tracking-wider text-sm">Links</h4>
+          <h4 className="font-bold mb-4 uppercase tracking-wider text-sm">
+            Links
+          </h4>
           <ul className="space-y-2 text-primary-foreground/70">
-            <li><Link href="/rooms" className="hover:text-white transition">Rooms & Suites</Link></li>
-            <li><Link href="/restaurant" className="hover:text-white transition">Dining</Link></li>
-            <li><Link href="/events" className="hover:text-white transition">Events</Link></li>
+            <li>
+              <Link href="/rooms" className="hover:text-white transition">
+                Rooms & Suites
+              </Link>
+            </li>
+            <li>
+              <Link href="/restaurant" className="hover:text-white transition">
+                Dining
+              </Link>
+            </li>
+            <li>
+              <Link href="/events" className="hover:text-white transition">
+                Events
+              </Link>
+            </li>
           </ul>
         </div>
         <div>
-          <h4 className="font-bold mb-4 uppercase tracking-wider text-sm">Social</h4>
+          <h4 className="font-bold mb-4 uppercase tracking-wider text-sm">
+            Social
+          </h4>
           <ul className="space-y-2 text-primary-foreground/70">
             <li>Instagram</li>
             <li>Twitter</li>
@@ -187,7 +235,7 @@ export function Footer() {
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-4 mt-16 pt-8 border-t border-primary-foreground/10 text-center text-primary-foreground/50 text-sm">
-        © 2024 Lumière Hotel. All rights reserved.
+        © 2025 FOSUA PAPABI Hotel. All rights reserved.
       </div>
     </footer>
   );
@@ -197,9 +245,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-muted/20">
       <Navbar />
-      <main className="flex-grow fade-in">
-        {children}
-      </main>
+      <main className="flex-grow fade-in">{children}</main>
       <Footer />
     </div>
   );
