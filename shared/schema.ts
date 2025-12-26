@@ -40,6 +40,7 @@ export const menuItems = pgTable("menu_items", {
   description: text("description").notNull(),
   price: integer("price").notNull(), // in cents
   category: text("category").notNull(), // starter, main, dessert, drink
+  imageUrl: text("image_url"), // optional image URL
   available: boolean("available").notNull().default(true),
 });
 

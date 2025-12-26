@@ -76,7 +76,7 @@ export function Navbar() {
                   >
                     <Avatar className="h-10 w-10 border border-border">
                       <AvatarFallback className="bg-primary/10 text-primary">
-                        {user.name.charAt(0).toUpperCase()}
+                        {user?.name?.charAt(0)?.toUpperCase() ?? "?"}
                       </AvatarFallback>
                     </Avatar>
                   </Button>

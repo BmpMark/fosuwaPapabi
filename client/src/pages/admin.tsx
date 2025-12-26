@@ -34,14 +34,17 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertRoomSchema, insertMenuItemSchema, type Room, type MenuItem } from "@shared/schema";
 import { api } from "@shared/routes";
-import { Trash2, Edit2, Plus } from "lucide-react";
+import { Trash2, Edit2, Plus, Upload } from "lucide-react";
+import { useUpload } from "@/hooks/use-upload";
 
 export default function AdminPage() {
   const { toast } = useToast();
+  const { getUploadParameters } = useUpload();
   const [roomDialogOpen, setRoomDialogOpen] = useState(false);
   const [menuDialogOpen, setMenuDialogOpen] = useState(false);
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
   const [editingMenuItem, setEditingMenuItem] = useState<MenuItem | null>(null);
+  const [menuImageUrl, setMenuImageUrl] = useState<string | undefined>();
 
   // Queries
   const { data: rooms = [] } = useQuery({
@@ -187,7 +190,15 @@ export default function AdminPage() {
   const handleCloseMenuDialog = () => {
     setMenuDialogOpen(false);
     setEditingMenuItem(null);
+    setMenuImageUrl(undefined);
     menuForm.reset();
+  };
+
+  const handleUploadSuccess = (response: any) => {
+    const imageUrl = response.objectPath;
+    setMenuImageUrl(imageUrl);
+    menuForm.setValue("imageUrl", imageUrl);
+    toast({ title: "Image uploaded successfully" });
   };
 
   return (
@@ -448,6 +459,66 @@ export default function AdminPage() {
                         </FormItem>
                       )}
                     />
+                    <FormField
+                      control={menuForm.control}
+                      name="imageUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Image</FormLabel>
+                          <div className="space-y-2">
+                            {(menuImageUrl || field.value) && (
+                              <div className="relative w-full h-32 rounded-md overflow-hidden bg-muted">
+                                <img 
+                                  src={menuImageUrl || field.value} 
+                                  alt="Menu item" 
+                                  className="w-full h-full object-cover"
+                                  data-testid="preview-menu-image"
+                                />
+                              </div>
+                            )}
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                              onClick={async (e) => {
+                                e.preventDefault();
+                                const input = document.createElement("input");
+                                input.type = "file";
+                                input.accept = "image/*";
+                                input.onchange = async (event) => {
+                                  const file = (event.target as HTMLInputElement).files?.[0];
+                                  if (file) {
+                                    const response = await fetch("/api/uploads/request-url", {
+                                      method: "POST",
+                                      headers: { "Content-Type": "application/json" },
+                                      body: JSON.stringify({
+                                        name: file.name,
+                                        size: file.size,
+                                        contentType: file.type,
+                                      }),
+                                    });
+                                    const data = await response.json();
+                                    await fetch(data.uploadURL, {
+                                      method: "PUT",
+                                      body: file,
+                                      headers: { "Content-Type": file.type },
+                                    });
+                                    handleUploadSuccess(data);
+                                  }
+                                };
+                                input.click();
+                              }}
+                              data-testid="button-upload-menu-image"
+                            >
+                              <Upload className="w-4 h-4 mr-2" />
+                              {menuImageUrl || field.value ? "Change Image" : "Upload Image"}
+                            </Button>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <Button type="submit" className="w-full" data-testid="button-submit-menu" disabled={createMenuMutation.isPending || updateMenuMutation.isPending}>
                       {editingMenuItem ? "Update Item" : "Create Item"}
                     </Button>
@@ -477,7 +548,19 @@ export default function AdminPage() {
                   <TableBody>
                     {menuItems.map((item) => (
                       <TableRow key={item.id} data-testid={`row-menu-${item.id}`}>
-                        <TableCell data-testid={`cell-menu-name-${item.id}`}>{item.name}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            {item.imageUrl && (
+                              <img 
+                                src={item.imageUrl} 
+                                alt={item.name}
+                                className="w-10 h-10 rounded object-cover"
+                                data-testid={`img-menu-${item.id}`}
+                              />
+                            )}
+                            <span data-testid={`cell-menu-name-${item.id}`}>{item.name}</span>
+                          </div>
+                        </TableCell>
                         <TableCell data-testid={`cell-menu-category-${item.id}`}>{item.category}</TableCell>
                         <TableCell data-testid={`cell-menu-price-${item.id}`}>${(item.price / 100).toFixed(2)}</TableCell>
                         <TableCell data-testid={`cell-menu-available-${item.id}`}>{item.available ? "Yes" : "No"}</TableCell>

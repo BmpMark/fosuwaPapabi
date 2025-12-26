@@ -2,6 +2,7 @@ import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
+import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 
@@ -12,6 +13,9 @@ export async function registerRoutes(
   // Setup Replit Auth BEFORE other routes
   await setupAuth(app);
   registerAuthRoutes(app);
+  
+  // Register object storage routes for file uploads
+  registerObjectStorageRoutes(app);
 
   // Rooms
   app.get(api.rooms.list.path, async (req, res) => {
