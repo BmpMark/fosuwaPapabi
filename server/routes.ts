@@ -46,6 +46,12 @@ export async function registerRoutes(
     res.json(room);
   });
 
+  app.delete(api.rooms.delete.path, async (req, res) => {
+    const success = await storage.deleteRoom(Number(req.params.id));
+    if (!success) return res.status(404).json({ message: "Room not found" });
+    res.json({ success: true });
+  });
+
   // Reservations
   app.get(api.reservations.list.path, async (req, res) => {
     const reservations = await storage.getReservations();
@@ -82,6 +88,19 @@ export async function registerRoutes(
     const input = api.menu.create.input.parse(req.body);
     const item = await storage.createMenuItem(input);
     res.status(201).json(item);
+  });
+
+  app.put(api.menu.update.path, async (req, res) => {
+    const input = api.menu.update.input.parse(req.body);
+    const item = await storage.updateMenuItem(Number(req.params.id), input);
+    if (!item) return res.status(404).json({ message: "Menu item not found" });
+    res.json(item);
+  });
+
+  app.delete(api.menu.delete.path, async (req, res) => {
+    const success = await storage.deleteMenuItem(Number(req.params.id));
+    if (!success) return res.status(404).json({ message: "Menu item not found" });
+    res.json({ success: true });
   });
 
   // Orders

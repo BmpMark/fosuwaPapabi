@@ -70,6 +70,14 @@ export const api = {
         404: errorSchemas.notFound,
       },
     },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/rooms/:id',
+      responses: {
+        200: z.object({ success: z.boolean() }),
+        404: errorSchemas.notFound,
+      },
+    },
   },
   reservations: {
     list: {
@@ -113,6 +121,23 @@ export const api = {
       responses: {
         201: z.custom<typeof menuItems.$inferSelect>(),
         400: errorSchemas.validation,
+      },
+    },
+    update: {
+      method: 'PUT' as const,
+      path: '/api/menu/:id',
+      input: insertMenuItemSchema.partial(),
+      responses: {
+        200: z.custom<typeof menuItems.$inferSelect>(),
+        404: errorSchemas.notFound,
+      },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/menu/:id',
+      responses: {
+        200: z.object({ success: z.boolean() }),
+        404: errorSchemas.notFound,
       },
     },
   },
