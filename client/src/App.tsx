@@ -18,7 +18,9 @@ function PrivateRoute({ component: Component }: { component: React.ComponentType
   const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
 
-  if (isLoading) return null;
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
 
   if (!user) {
     setLocation("/login");

@@ -90,7 +90,7 @@ export function Navbar() {
                       </div>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => logout.mutate()}>
+                  <DropdownMenuItem onClick={() => logout()}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Log out
                   </DropdownMenuItem>
@@ -154,7 +154,7 @@ export function Navbar() {
                 <div
                   className="flex items-center gap-3 px-4 py-3 text-base font-medium text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
                   onClick={() => {
-                    logout.mutate();
+                    logout();
                     setIsOpen(false);
                   }}
                 >

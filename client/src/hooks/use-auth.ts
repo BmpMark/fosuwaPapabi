@@ -16,7 +16,9 @@ export function useAuth() {
     queryKey: ["/api/auth/user"],
     queryFn: fetchUser,
     retry: false,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0,
+    gcTime: 1000 * 60 * 5,
+    refetchOnMount: true,
   });
 
   const logoutMutation = useMutation({
