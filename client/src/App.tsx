@@ -12,6 +12,8 @@ import RestaurantPage from "@/pages/restaurant";
 import AuthPage from "@/pages/auth";
 import Dashboard from "@/pages/dashboard/index";
 import RoomService from "@/pages/dashboard/room-service";
+import RoomsAdminPage from "@/pages/dashboard/rooms-admin";
+import MenuAdminPage from "@/pages/dashboard/menu-admin";
 import NotFound from "@/pages/not-found";
 
 function PrivateRoute({ component: Component }: { component: React.ComponentType }) {
@@ -43,8 +45,14 @@ function Router() {
       <Route path="/dashboard/orders">
         <PrivateRoute component={RoomService} />
       </Route>
+      <Route path="/dashboard/rooms">
+        <PrivateRoute component={RoomsAdminPage} />
+      </Route>
+      <Route path="/dashboard/menu">
+        <PrivateRoute component={MenuAdminPage} />
+      </Route>
       
-      {/* Placeholder for admin/other routes if needed later */}
+      {/* Placeholder for other routes if needed later */}
       <Route path="/dashboard/:any*">
         <PrivateRoute component={Dashboard} />
       </Route>
