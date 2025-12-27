@@ -1,8 +1,7 @@
 import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
-import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
+import { setupAuth } from "./auth";
 import { api } from "@shared/routes";
 import { z } from "zod";
 
@@ -10,12 +9,7 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // Setup Replit Auth BEFORE other routes
-  await setupAuth(app);
-  registerAuthRoutes(app);
-  
-  // Register object storage routes for file uploads
-  registerObjectStorageRoutes(app);
+  setupAuth(app);
 
   // Rooms
   app.get(api.rooms.list.path, async (req, res) => {
@@ -48,12 +42,6 @@ export async function registerRoutes(
     const room = await storage.updateRoom(Number(req.params.id), input);
     if (!room) return res.status(404).json({ message: "Room not found" });
     res.json(room);
-  });
-
-  app.delete(api.rooms.delete.path, async (req, res) => {
-    const success = await storage.deleteRoom(Number(req.params.id));
-    if (!success) return res.status(404).json({ message: "Room not found" });
-    res.json({ success: true });
   });
 
   // Reservations
@@ -92,19 +80,6 @@ export async function registerRoutes(
     const input = api.menu.create.input.parse(req.body);
     const item = await storage.createMenuItem(input);
     res.status(201).json(item);
-  });
-
-  app.put(api.menu.update.path, async (req, res) => {
-    const input = api.menu.update.input.parse(req.body);
-    const item = await storage.updateMenuItem(Number(req.params.id), input);
-    if (!item) return res.status(404).json({ message: "Menu item not found" });
-    res.json(item);
-  });
-
-  app.delete(api.menu.delete.path, async (req, res) => {
-    const success = await storage.deleteMenuItem(Number(req.params.id));
-    if (!success) return res.status(404).json({ message: "Menu item not found" });
-    res.json({ success: true });
   });
 
   // Orders

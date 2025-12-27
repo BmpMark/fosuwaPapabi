@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertRoomSchema, insertReservationSchema, insertMenuItemSchema, insertOrderSchema, insertOrderItemSchema, rooms, reservations, menuItems, orders } from './schema';
+import { insertUserSchema, insertRoomSchema, insertReservationSchema, insertMenuItemSchema, insertOrderSchema, insertOrderItemSchema, users, rooms, reservations, menuItems, orders } from './schema';
 
 export const errorSchemas = {
   validation: z.object({
@@ -19,19 +19,36 @@ export const errorSchemas = {
 
 export const api = {
   auth: {
+    register: {
+      method: 'POST' as const,
+      path: '/api/register',
+      input: insertUserSchema,
+      responses: {
+        201: z.custom<typeof users.$inferSelect>(),
+        400: errorSchemas.validation,
+      },
+    },
+    login: {
+      method: 'POST' as const,
+      path: '/api/login',
+      input: z.object({ username: z.string(), password: z.string() }),
+      responses: {
+        200: z.custom<typeof users.$inferSelect>(),
+        401: errorSchemas.unauthorized,
+      },
+    },
+    logout: {
+      method: 'POST' as const,
+      path: '/api/logout',
+      responses: {
+        200: z.object({ message: z.string() }),
+      },
+    },
     user: {
       method: 'GET' as const,
-      path: '/api/auth/user',
+      path: '/api/user',
       responses: {
-        200: z.object({
-          id: z.string(),
-          email: z.string().nullable(),
-          firstName: z.string().nullable(),
-          lastName: z.string().nullable(),
-          profileImageUrl: z.string().nullable(),
-          createdAt: z.date(),
-          updatedAt: z.date(),
-        }),
+        200: z.custom<typeof users.$inferSelect>(),
         401: errorSchemas.unauthorized,
       },
     },
@@ -67,14 +84,6 @@ export const api = {
       input: insertRoomSchema.partial(),
       responses: {
         200: z.custom<typeof rooms.$inferSelect>(),
-        404: errorSchemas.notFound,
-      },
-    },
-    delete: {
-      method: 'DELETE' as const,
-      path: '/api/rooms/:id',
-      responses: {
-        200: z.object({ success: z.boolean() }),
         404: errorSchemas.notFound,
       },
     },
@@ -121,23 +130,6 @@ export const api = {
       responses: {
         201: z.custom<typeof menuItems.$inferSelect>(),
         400: errorSchemas.validation,
-      },
-    },
-    update: {
-      method: 'PUT' as const,
-      path: '/api/menu/:id',
-      input: insertMenuItemSchema.partial(),
-      responses: {
-        200: z.custom<typeof menuItems.$inferSelect>(),
-        404: errorSchemas.notFound,
-      },
-    },
-    delete: {
-      method: 'DELETE' as const,
-      path: '/api/menu/:id',
-      responses: {
-        200: z.object({ success: z.boolean() }),
-        404: errorSchemas.notFound,
       },
     },
   },

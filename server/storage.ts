@@ -1,13 +1,21 @@
-import { rooms, reservations, menuItems, orders, orderItems, type Room, type Reservation, type MenuItem, type Order, type OrderItem } from "@shared/schema";
+import { users, rooms, reservations, menuItems, orders, orderItems, type User, type InsertUser, type Room, type Reservation, type MenuItem, type Order, type OrderItem } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
+import session from "express-session";
+import connectPg from "connect-pg-simple";
+import { pool } from "./db";
+
+const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+
   getRooms(): Promise<Room[]>;
   getRoom(id: number): Promise<Room | undefined>;
   createRoom(room: typeof rooms.$inferInsert): Promise<Room>;
   updateRoom(id: number, updates: Partial<typeof rooms.$inferInsert>): Promise<Room | undefined>;
-  deleteRoom(id: number): Promise<boolean>;
 
   getReservations(): Promise<Reservation[]>;
   createReservation(reservation: typeof reservations.$inferInsert): Promise<Reservation>;
@@ -15,15 +23,38 @@ export interface IStorage {
 
   getMenuItems(): Promise<MenuItem[]>;
   createMenuItem(item: typeof menuItems.$inferInsert): Promise<MenuItem>;
-  updateMenuItem(id: number, updates: Partial<typeof menuItems.$inferInsert>): Promise<MenuItem | undefined>;
-  deleteMenuItem(id: number): Promise<boolean>;
 
   getOrders(): Promise<Order[]>;
   createOrder(order: typeof orders.$inferInsert, items: { menuItemId: number; quantity: number }[]): Promise<Order>;
   updateOrderStatus(id: number, status: string): Promise<Order | undefined>;
+
+  sessionStore: session.Store;
 }
 
 export class DatabaseStorage implements IStorage {
+  sessionStore: session.Store;
+
+  constructor() {
+    this.sessionStore = new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true,
+    });
+  }
+
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
 
   async getRooms(): Promise<Room[]> {
     return await db.select().from(rooms);
@@ -42,11 +73,6 @@ export class DatabaseStorage implements IStorage {
   async updateRoom(id: number, updates: Partial<typeof rooms.$inferInsert>): Promise<Room | undefined> {
     const [updatedRoom] = await db.update(rooms).set(updates).where(eq(rooms.id, id)).returning();
     return updatedRoom;
-  }
-
-  async deleteRoom(id: number): Promise<boolean> {
-    const result = await db.delete(rooms).where(eq(rooms.id, id)).returning();
-    return result.length > 0;
   }
 
   async getReservations(): Promise<Reservation[]> {
@@ -70,16 +96,6 @@ export class DatabaseStorage implements IStorage {
   async createMenuItem(item: typeof menuItems.$inferInsert): Promise<MenuItem> {
     const [newItem] = await db.insert(menuItems).values(item).returning();
     return newItem;
-  }
-
-  async updateMenuItem(id: number, updates: Partial<typeof menuItems.$inferInsert>): Promise<MenuItem | undefined> {
-    const [updatedItem] = await db.update(menuItems).set(updates).where(eq(menuItems.id, id)).returning();
-    return updatedItem;
-  }
-
-  async deleteMenuItem(id: number): Promise<boolean> {
-    const result = await db.delete(menuItems).where(eq(menuItems.id, id)).returning();
-    return result.length > 0;
   }
 
   async getOrders(): Promise<Order[]> {

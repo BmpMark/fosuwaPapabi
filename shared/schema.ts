@@ -1,11 +1,18 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal, date, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, decimal, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
-import { users } from "./models/auth";
 
-// Export auth models from shared/models/auth
-export * from "./models/auth";
+// Users
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+  role: text("role").notNull().default("guest"), // guest, staff, admin
+  name: text("name").notNull(),
+});
+
+export const insertUserSchema = createInsertSchema(users).omit({ id: true });
 
 // Rooms
 export const rooms = pgTable("rooms", {
@@ -23,7 +30,7 @@ export const insertRoomSchema = createInsertSchema(rooms).omit({ id: true });
 // Reservations
 export const reservations = pgTable("reservations", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull(), // UUID from auth users table
+  userId: integer("user_id").notNull(),
   roomId: integer("room_id").notNull(),
   checkIn: date("check_in").notNull(),
   checkOut: date("check_out").notNull(),
@@ -40,7 +47,6 @@ export const menuItems = pgTable("menu_items", {
   description: text("description").notNull(),
   price: integer("price").notNull(), // in cents
   category: text("category").notNull(), // starter, main, dessert, drink
-  imageUrl: text("image_url"), // optional image URL
   available: boolean("available").notNull().default(true),
 });
 
@@ -49,7 +55,7 @@ export const insertMenuItemSchema = createInsertSchema(menuItems).omit({ id: tru
 // Orders
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id"), // UUID from auth users table, nullable for walk-ins
+  userId: integer("user_id"), // Nullable for walk-in? Let's say required for now or handled by staff
   roomId: integer("room_id"), // Optional: if room service
   type: text("type").notNull(), // dine_in, room_service
   status: text("status").notNull().default("pending"), // pending, preparing, delivered, completed, billed
@@ -89,6 +95,7 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
 }));
 
 // Export types
+export type User = typeof users.$inferSelect;
 export type Room = typeof rooms.$inferSelect;
 export type Reservation = typeof reservations.$inferSelect;
 export type MenuItem = typeof menuItems.$inferSelect;

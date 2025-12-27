@@ -53,18 +53,8 @@ export default function RestaurantPage() {
           {categories.map((category) => (
             <TabsContent key={category} value={category} className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               {menu.filter(item => item.category === category).map((item) => (
-                <div key={item.id} className="flex justify-between items-start gap-6 group p-4 rounded-xl hover:bg-muted/30 transition-colors">
-                  {item.imageUrl && (
-                    <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
-                      <img 
-                        src={item.imageUrl} 
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                        data-testid={`img-menu-item-${item.id}`}
-                      />
-                    </div>
-                  )}
-                  <div className="flex-1 space-y-1">
+                <div key={item.id} className="flex justify-between items-start group p-4 rounded-xl hover:bg-muted/30 transition-colors">
+                  <div className="space-y-1">
                     <h3 className="font-display text-xl font-bold text-primary group-hover:text-accent transition-colors">
                       {item.name}
                     </h3>
@@ -72,7 +62,7 @@ export default function RestaurantPage() {
                       {item.description}
                     </p>
                   </div>
-                  <div className="text-lg font-semibold tabular-nums text-foreground/80 flex-shrink-0">
+                  <div className="text-lg font-semibold tabular-nums text-foreground/80">
                     ${(item.price / 100).toFixed(2)}
                   </div>
                 </div>
