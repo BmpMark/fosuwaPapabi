@@ -103,6 +103,18 @@ export async function registerRoutes(
 
   // Seed data function (simple check)
   async function seed() {
+    // Create admin account if none exist
+    const adminExists = await storage.getUserByUsername("admin");
+    if (!adminExists) {
+      const { scrypt, randomBytes } = await import("crypto");
+      const { promisify } = await import("util");
+      const scryptAsync = promisify(scrypt);
+      const salt = randomBytes(16).toString("hex");
+      const buf = (await scryptAsync("admin123", salt, 64)) as Buffer;
+      const hashedPassword = `${buf.toString("hex")}.${salt}`;
+      await storage.createUser({ username: "admin", password: hashedPassword, role: "admin", name: "Admin User" });
+    }
+    
     const rooms = await storage.getRooms();
     if (rooms.length === 0) {
         await storage.createRoom({ number: "101", type: "single", price: 10000, description: "Cozy single room", capacity: 1, isAvailable: true });

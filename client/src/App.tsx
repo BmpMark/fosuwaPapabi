@@ -52,11 +52,7 @@ function Router() {
         <PrivateRoute component={MenuAdminPage} />
       </Route>
       
-      {/* Placeholder for other routes if needed later */}
-      <Route path="/dashboard/:any*">
-        <PrivateRoute component={Dashboard} />
-      </Route>
-
+      {/* Fallback */}
       <Route component={NotFound} />
     </Switch>
   );
