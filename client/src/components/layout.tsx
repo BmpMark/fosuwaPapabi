@@ -1,9 +1,10 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import {
   Menu, X, Home, Bed, Coffee, User, LogOut,
-  LayoutDashboard, ShoppingBag, CalendarCheck
+  LayoutDashboard, ShoppingBag, CalendarCheck, Moon, Sun
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 export function Navbar() {
   const [location] = useLocation();
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
 
   const links = [
@@ -54,6 +56,16 @@ export function Navbar() {
                 </div>
               </Link>
             ))}
+
+            <Button 
+              size="icon" 
+              variant="ghost"
+              onClick={toggleTheme}
+              title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+              data-testid="button-theme-toggle"
+            >
+              {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+            </Button>
 
             {user ? (
               <DropdownMenu>

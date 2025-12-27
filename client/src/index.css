@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 :root {
-  /* Warm Neutral Palette - Boutique Hotel Vibe */
+  /* LIGHT MODE - Warm Neutral Palette - Boutique Hotel Vibe */
   --background: 30 20% 98%;      /* Soft off-white */
   --foreground: 24 10% 15%;      /* Dark warm gray */
   
@@ -28,10 +28,69 @@
   --input: 24 10% 85%;
   --ring: 24 25% 35%;
   
+  --card: 0 0% 100%;
+  --card-foreground: 24 10% 15%;
+  --card-border: 24 10% 85%;
+  
+  --sidebar: 30 20% 98%;
+  --sidebar-foreground: 24 10% 15%;
+  --sidebar-border: 24 10% 85%;
+  --sidebar-primary: 24 25% 35%;
+  --sidebar-primary-foreground: 30 20% 98%;
+  --sidebar-accent: 28 60% 60%;
+  --sidebar-accent-foreground: 24 10% 15%;
+  --sidebar-ring: 24 25% 35%;
+  
+  --popover: 0 0% 100%;
+  --popover-foreground: 24 10% 15%;
+  --popover-border: 24 10% 85%;
+  
   --radius: 0.5rem;
   
   --font-display: 'Playfair Display', serif;
   --font-body: 'Lato', sans-serif;
+}
+
+.dark {
+  /* DARK MODE */
+  --background: 24 15% 12%;      /* Very dark warm gray */
+  --foreground: 30 20% 95%;      /* Very light off-white */
+  
+  --primary: 28 60% 65%;         /* Warm gold/terracotta lighter */
+  --primary-foreground: 24 15% 12%;
+  
+  --secondary: 35 30% 25%;       /* Dark beige */
+  --secondary-foreground: 30 20% 95%;
+  
+  --muted: 24 10% 25%;
+  --muted-foreground: 30 20% 70%;
+  
+  --accent: 28 60% 65%;          /* Brighter gold for dark mode */
+  --accent-foreground: 24 15% 12%;
+  
+  --destructive: 0 84% 55%;
+  --destructive-foreground: 30 20% 95%;
+
+  --border: 24 10% 25%;
+  --input: 24 10% 20%;
+  --ring: 28 60% 65%;
+  
+  --card: 24 10% 18%;
+  --card-foreground: 30 20% 95%;
+  --card-border: 24 10% 30%;
+  
+  --sidebar: 24 15% 12%;
+  --sidebar-foreground: 30 20% 95%;
+  --sidebar-border: 24 10% 25%;
+  --sidebar-primary: 28 60% 65%;
+  --sidebar-primary-foreground: 24 15% 12%;
+  --sidebar-accent: 28 60% 65%;
+  --sidebar-accent-foreground: 24 15% 12%;
+  --sidebar-ring: 28 60% 65%;
+  
+  --popover: 24 10% 18%;
+  --popover-foreground: 30 20% 95%;
+  --popover-border: 24 10% 30%;
 }
 
 @layer base {
