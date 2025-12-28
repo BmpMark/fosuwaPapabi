@@ -1,11 +1,21 @@
 import { Layout } from "@/components/layout";
 import { useRestaurant } from "@/hooks/use-restaurant";
+import { useAuth } from "@/hooks/use-auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Plus, Minus, ShoppingBag } from "lucide-react";
+import { Link } from "wouter";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function RestaurantPage() {
-  const { menu, isLoadingMenu } = useRestaurant();
+  const { menu, isLoadingMenu, createOrder } = useRestaurant();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [cart, setCart] = useState<{id: number; quantity: number}[]>([]);
 
   if (isLoadingMenu) {
     return (
@@ -18,6 +28,55 @@ export default function RestaurantPage() {
   }
 
   const categories = Array.from(new Set(menu.map((item) => item.category)));
+
+  const addToCart = (id: number) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.id === id);
+      if (existing) {
+        return prev.map(item => item.id === id ? { ...item, quantity: item.quantity + 1 } : item);
+      }
+      return [...prev, { id, quantity: 1 }];
+    });
+  };
+
+  const removeFromCart = (id: number) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.id === id);
+      if (existing && existing.quantity > 1) {
+        return prev.map(item => item.id === id ? { ...item, quantity: item.quantity - 1 } : item);
+      }
+      return prev.filter(item => item.id !== id);
+    });
+  };
+
+  const submitOrder = () => {
+    const orderItems = cart.map(item => ({ menuItemId: item.id, quantity: item.quantity }));
+    const totalAmount = cart.reduce((acc, cartItem) => {
+      const menuItem = menu.find(m => m.id === cartItem.id);
+      return acc + (menuItem ? menuItem.price * cartItem.quantity : 0);
+    }, 0);
+
+    createOrder.mutate({
+      order: {
+        userId: user!.id,
+        roomId: null,
+        type: "dine_in",
+        totalAmount,
+        status: "pending"
+      },
+      items: orderItems
+    }, {
+      onSuccess: () => {
+        setCart([]);
+        toast({ title: "Order Placed", description: "Your order has been submitted." });
+      }
+    });
+  };
+
+  const total = cart.reduce((acc, cartItem) => {
+    const menuItem = menu.find(m => m.id === cartItem.id);
+    return acc + (menuItem ? menuItem.price * cartItem.quantity : 0);
+  }, 0);
 
   return (
     <Layout>
@@ -53,23 +112,97 @@ export default function RestaurantPage() {
           {categories.map((category) => (
             <TabsContent key={category} value={category} className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               {menu.filter(item => item.category === category).map((item) => (
-                <div key={item.id} className="flex justify-between items-start group p-4 rounded-xl hover:bg-muted/30 transition-colors">
-                  <div className="space-y-1">
+                <div key={item.id} className="flex gap-4 items-start group p-4 rounded-xl hover:bg-muted/30 transition-colors">
+                  {item.image && (
+                    <div className="flex-shrink-0">
+                      <img 
+                        src={item.image} 
+                        alt={item.name}
+                        className="w-24 h-24 object-cover rounded-lg"
+                      />
+                    </div>
+                  )}
+                  <div className="space-y-1 flex-1">
                     <h3 className="font-display text-xl font-bold text-primary group-hover:text-accent transition-colors">
                       {item.name}
                     </h3>
                     <p className="text-muted-foreground text-sm max-w-lg leading-relaxed">
                       {item.description}
                     </p>
-                  </div>
-                  <div className="text-lg font-semibold tabular-nums text-foreground/80">
-                    ${(item.price / 100).toFixed(2)}
+                    <div className="flex items-center justify-between pt-2">
+                      <div className="text-lg font-semibold tabular-nums text-foreground/80">
+                        ${(item.price / 100).toFixed(2)}
+                      </div>
+                      {user ? (
+                        cart.find(c => c.id === item.id) ? (
+                          <div className="flex items-center gap-2">
+                            <Button size="icon" variant="outline" onClick={() => removeFromCart(item.id)}>
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                            <span className="w-4 text-center text-sm font-medium">{cart.find(c => c.id === item.id)?.quantity}</span>
+                            <Button size="icon" onClick={() => addToCart(item.id)}>
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button onClick={() => addToCart(item.id)}>Order</Button>
+                        )
+                      ) : (
+                        <Link href="/login">
+                          <Button variant="outline">Sign in to Order</Button>
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
             </TabsContent>
           ))}
         </Tabs>
+
+        {user && cart.length > 0 && (
+          <div className="fixed bottom-6 right-6 z-40">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button size="lg" className="gap-2 shadow-lg">
+                  <ShoppingBag className="w-5 h-5" />
+                  <span>Order ({cart.length})</span>
+                  <span>${(total / 100).toFixed(2)}</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Review Your Order</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  {cart.map(item => {
+                    const menuItem = menu.find(m => m.id === item.id);
+                    if (!menuItem) return null;
+                    return (
+                      <div key={item.id} className="flex justify-between items-center text-sm">
+                        <div>
+                          <p className="font-medium">{item.quantity}x {menuItem.name}</p>
+                          <p className="text-muted-foreground text-xs">${(menuItem.price / 100).toFixed(2)} each</p>
+                        </div>
+                        <p className="font-semibold">${((menuItem.price * item.quantity) / 100).toFixed(2)}</p>
+                      </div>
+                    );
+                  })}
+                  <div className="border-t pt-4 flex justify-between font-bold text-lg">
+                    <span>Total</span>
+                    <span>${(total / 100).toFixed(2)}</span>
+                  </div>
+                  <Button className="w-full" onClick={submitOrder} disabled={createOrder.isPending}>
+                    {createOrder.isPending ? "Placing Order..." : "Place Order"}
+                  </Button>
+                  <Button type="button" variant="outline" className="w-full" onClick={() => setCart([])}>
+                    Clear Cart
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
       </div>
     </Layout>
   );
