@@ -48,6 +48,7 @@ export const menuItems = pgTable("menu_items", {
   price: integer("price").notNull(), // in cents
   category: text("category").notNull(), // starter, main, dessert, drink
   available: boolean("available").notNull().default(true),
+  image: text("image"), // image URL
 });
 
 export const insertMenuItemSchema = createInsertSchema(menuItems).omit({ id: true });

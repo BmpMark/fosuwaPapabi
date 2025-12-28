@@ -22,6 +22,7 @@ const menuItemSchema = z.object({
   price: z.coerce.number().min(0, "Price must be positive"),
   category: z.enum(["starter", "main", "dessert", "drink"]),
   available: z.boolean().default(true),
+  image: z.string().url("Image must be a valid URL").optional().or(z.literal("")),
 });
 
 type MenuItemFormData = z.infer<typeof menuItemSchema>;
@@ -129,6 +130,13 @@ export default function MenuAdminPage() {
                         <FormMessage />
                       </FormItem>
                     )} />
+                    <FormField control={form.control} name="image" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Image URL</FormLabel>
+                        <FormControl><Input placeholder="https://example.com/image.jpg" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
                     <div className="flex gap-4">
                       <Button type="submit" disabled={createMenuItem.isPending}>
                         Add Item
@@ -147,9 +155,18 @@ export default function MenuAdminPage() {
             {menu.map((item) => (
               <Card key={item.id} data-testid={`card-menu-${item.id}`}>
                 <CardContent className="pt-6">
-                  <div className="flex justify-between items-start">
+                  <div className="flex gap-6 items-start">
+                    {item.image && (
+                      <div className="flex-shrink-0">
+                        <img 
+                          src={item.image} 
+                          alt={item.name}
+                          className="w-32 h-32 object-cover rounded-lg"
+                        />
+                      </div>
+                    )}
                     <div className="space-y-2 flex-1">
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4 flex-wrap">
                         <h3 className="font-display text-xl font-bold">{item.name}</h3>
                         <span className="px-3 py-1 bg-accent/20 text-accent rounded-full text-sm font-medium capitalize">{item.category}</span>
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${item.available ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" : "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200"}`}>
