@@ -30,6 +30,20 @@ function PrivateRoute({ component: Component }: { component: React.ComponentType
   return <Component />;
 }
 
+function AdminRoute({ component: Component }: { component: React.ComponentType }) {
+  const { user, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
+
+  if (isLoading) return null;
+
+  if (!user || (user.role !== "staff" && user.role !== "manager")) {
+    setLocation("/dashboard");
+    return null;
+  }
+
+  return <Component />;
+}
+
 function Router() {
   return (
     <Switch>
@@ -43,13 +57,13 @@ function Router() {
         <PrivateRoute component={Dashboard} />
       </Route>
       <Route path="/dashboard/orders">
-        <PrivateRoute component={RoomService} />
+        <AdminRoute component={RoomService} />
       </Route>
       <Route path="/dashboard/rooms">
-        <PrivateRoute component={RoomsAdminPage} />
+        <AdminRoute component={RoomsAdminPage} />
       </Route>
       <Route path="/dashboard/menu">
-        <PrivateRoute component={MenuAdminPage} />
+        <AdminRoute component={MenuAdminPage} />
       </Route>
       
       {/* Fallback */}

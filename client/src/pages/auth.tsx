@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { insertUserSchema } from "@shared/schema";
 import { Link } from "wouter";
 import { ArrowLeft } from "lucide-react";
@@ -129,12 +130,34 @@ export default function AuthPage() {
                     <form onSubmit={registerForm.handleSubmit((d) => register.mutate(d))} className="space-y-4">
                       <FormField
                         control={registerForm.control}
+                        name="role"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>I am registering as</FormLabel>
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <FormControl>
+                                <SelectTrigger data-testid="select-role">
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="guest">Guest</SelectItem>
+                                <SelectItem value="staff">Staff</SelectItem>
+                                <SelectItem value="manager">Manager</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={registerForm.control}
                         name="name"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Full Name</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input data-testid="input-name" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -147,7 +170,7 @@ export default function AuthPage() {
                           <FormItem>
                             <FormLabel>Username</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input data-testid="input-username" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -160,7 +183,7 @@ export default function AuthPage() {
                           <FormItem>
                             <FormLabel>Password</FormLabel>
                             <FormControl>
-                              <Input type="password" {...field} />
+                              <Input data-testid="input-password" type="password" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
