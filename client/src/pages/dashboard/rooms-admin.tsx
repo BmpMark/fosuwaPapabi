@@ -14,7 +14,7 @@ import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 
 const roomSchema = z.object({
   number: z.string().min(1, "Room number is required"),
@@ -30,7 +30,7 @@ type RoomFormData = z.infer<typeof roomSchema>;
 export default function RoomsAdminPage() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
-  const { rooms, createRoom } = useRooms();
+  const { rooms, createRoom, deleteRoom } = useRooms();
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   if (!user || (user.role !== "admin" && user.role !== "staff")) {
@@ -154,9 +154,9 @@ export default function RoomsAdminPage() {
             {rooms.map((room) => (
               <Card key={room.id} data-testid={`card-room-${room.id}`}>
                 <CardContent className="pt-6">
-                  <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-start gap-4">
                     <div className="space-y-2 flex-1">
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4 flex-wrap">
                         <h3 className="font-display text-xl font-bold">Room {room.number}</h3>
                         <span className="px-3 py-1 bg-accent/20 text-accent rounded-full text-sm font-medium capitalize">{room.type}</span>
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${room.isAvailable ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" : "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200"}`}>
@@ -169,6 +169,15 @@ export default function RoomsAdminPage() {
                         <span><strong>Capacity:</strong> {room.capacity} {room.capacity === 1 ? "guest" : "guests"}</span>
                       </div>
                     </div>
+                    <Button 
+                      size="icon" 
+                      variant="destructive"
+                      onClick={() => deleteRoom.mutate(room.id)}
+                      disabled={deleteRoom.isPending}
+                      data-testid={`button-delete-room-${room.id}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

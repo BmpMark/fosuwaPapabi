@@ -51,10 +51,27 @@ export function useRooms() {
     },
   });
 
+  const deleteRoomMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const url = buildUrl(api.rooms.delete.path, { id });
+      const res = await fetch(url, {
+        method: api.rooms.delete.method,
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to delete room");
+      return api.rooms.delete.responses[200].parse(await res.json());
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.rooms.list.path] });
+      toast({ title: "Room deleted", description: "Room has been removed." });
+    },
+  });
+
   return {
     rooms: roomsQuery.data ?? [],
     isLoading: roomsQuery.isLoading,
     createRoom: createRoomMutation,
     updateRoom: updateRoomMutation,
+    deleteRoom: deleteRoomMutation,
   };
 }

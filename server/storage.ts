@@ -16,6 +16,7 @@ export interface IStorage {
   getRoom(id: number): Promise<Room | undefined>;
   createRoom(room: typeof rooms.$inferInsert): Promise<Room>;
   updateRoom(id: number, updates: Partial<typeof rooms.$inferInsert>): Promise<Room | undefined>;
+  deleteRoom(id: number): Promise<boolean>;
 
   getReservations(): Promise<Reservation[]>;
   createReservation(reservation: typeof reservations.$inferInsert): Promise<Reservation>;
@@ -23,6 +24,7 @@ export interface IStorage {
 
   getMenuItems(): Promise<MenuItem[]>;
   createMenuItem(item: typeof menuItems.$inferInsert): Promise<MenuItem>;
+  deleteMenuItem(id: number): Promise<boolean>;
 
   getOrders(): Promise<Order[]>;
   createOrder(order: typeof orders.$inferInsert, items: { menuItemId: number; quantity: number }[]): Promise<Order>;
@@ -75,6 +77,11 @@ export class DatabaseStorage implements IStorage {
     return updatedRoom;
   }
 
+  async deleteRoom(id: number): Promise<boolean> {
+    const result = await db.delete(rooms).where(eq(rooms.id, id));
+    return true;
+  }
+
   async getReservations(): Promise<Reservation[]> {
     return await db.select().from(reservations);
   }
@@ -96,6 +103,11 @@ export class DatabaseStorage implements IStorage {
   async createMenuItem(item: typeof menuItems.$inferInsert): Promise<MenuItem> {
     const [newItem] = await db.insert(menuItems).values(item).returning();
     return newItem;
+  }
+
+  async deleteMenuItem(id: number): Promise<boolean> {
+    await db.delete(menuItems).where(eq(menuItems.id, id));
+    return true;
   }
 
   async getOrders(): Promise<Order[]> {

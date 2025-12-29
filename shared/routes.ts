@@ -87,6 +87,14 @@ export const api = {
         404: errorSchemas.notFound,
       },
     },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/rooms/:id',
+      responses: {
+        200: z.object({ message: z.string() }),
+        404: errorSchemas.notFound,
+      },
+    },
   },
   reservations: {
     list: {
@@ -130,6 +138,14 @@ export const api = {
       responses: {
         201: z.custom<typeof menuItems.$inferSelect>(),
         400: errorSchemas.validation,
+      },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/menu/:id',
+      responses: {
+        200: z.object({ message: z.string() }),
+        404: errorSchemas.notFound,
       },
     },
   },

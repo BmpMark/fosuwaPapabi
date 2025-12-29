@@ -14,7 +14,7 @@ import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 
 const menuItemSchema = z.object({
   name: z.string().min(1, "Item name is required"),
@@ -30,7 +30,7 @@ type MenuItemFormData = z.infer<typeof menuItemSchema>;
 export default function MenuAdminPage() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
-  const { menu, createMenuItem } = useRestaurant();
+  const { menu, createMenuItem, deleteMenuItem } = useRestaurant();
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   if (!user || (user.role !== "admin" && user.role !== "staff")) {
@@ -166,12 +166,23 @@ export default function MenuAdminPage() {
                       </div>
                     )}
                     <div className="space-y-2 flex-1">
-                      <div className="flex items-center gap-4 flex-wrap">
-                        <h3 className="font-display text-xl font-bold">{item.name}</h3>
-                        <span className="px-3 py-1 bg-accent/20 text-accent rounded-full text-sm font-medium capitalize">{item.category}</span>
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${item.available ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" : "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200"}`}>
-                          {item.available ? "Available" : "Unavailable"}
-                        </span>
+                      <div className="flex items-center gap-4 flex-wrap justify-between">
+                        <div className="flex items-center gap-4 flex-wrap">
+                          <h3 className="font-display text-xl font-bold">{item.name}</h3>
+                          <span className="px-3 py-1 bg-accent/20 text-accent rounded-full text-sm font-medium capitalize">{item.category}</span>
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${item.available ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" : "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200"}`}>
+                            {item.available ? "Available" : "Unavailable"}
+                          </span>
+                        </div>
+                        <Button 
+                          size="icon" 
+                          variant="destructive"
+                          onClick={() => deleteMenuItem.mutate(item.id)}
+                          disabled={deleteMenuItem.isPending}
+                          data-testid={`button-delete-menu-${item.id}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                       <p className="text-muted-foreground">{item.description}</p>
                       <p className="text-sm font-semibold">${(item.price / 100).toFixed(2)}</p>

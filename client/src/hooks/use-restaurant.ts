@@ -79,6 +79,22 @@ export function useRestaurant() {
     },
   });
 
+  const deleteMenuItemMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const url = buildUrl(api.menu.delete.path, { id });
+      const res = await fetch(url, {
+        method: api.menu.delete.method,
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to delete menu item");
+      return api.menu.delete.responses[200].parse(await res.json());
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.menu.list.path] });
+      toast({ title: "Menu Item Deleted", description: "Item has been removed." });
+    },
+  });
+
   return {
     menu: menuQuery.data ?? [],
     orders: ordersQuery.data ?? [],
@@ -87,5 +103,6 @@ export function useRestaurant() {
     createMenuItem: createMenuItemMutation,
     createOrder: createOrderMutation,
     updateOrderStatus: updateOrderStatusMutation,
+    deleteMenuItem: deleteMenuItemMutation,
   };
 }
