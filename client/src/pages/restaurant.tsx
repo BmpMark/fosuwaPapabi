@@ -5,7 +5,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Plus, Minus, ShoppingBag } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -15,13 +21,15 @@ export default function RestaurantPage() {
   const { menu, isLoadingMenu, createOrder } = useRestaurant();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [cart, setCart] = useState<{id: number; quantity: number}[]>([]);
+  const [cart, setCart] = useState<{ id: number; quantity: number }[]>([]);
 
   if (isLoadingMenu) {
     return (
       <Layout>
         <div className="min-h-[60vh] flex items-center justify-center">
-          <div className="animate-pulse text-2xl font-display text-muted-foreground">Loading Menu...</div>
+          <div className="animate-pulse text-2xl font-display text-muted-foreground">
+            Loading Menu...
+          </div>
         </div>
       </Layout>
     );
@@ -30,51 +38,64 @@ export default function RestaurantPage() {
   const categories = Array.from(new Set(menu.map((item) => item.category)));
 
   const addToCart = (id: number) => {
-    setCart(prev => {
-      const existing = prev.find(item => item.id === id);
+    setCart((prev) => {
+      const existing = prev.find((item) => item.id === id);
       if (existing) {
-        return prev.map(item => item.id === id ? { ...item, quantity: item.quantity + 1 } : item);
+        return prev.map((item) =>
+          item.id === id ? { ...item, quantity: item.quantity + 1 } : item,
+        );
       }
       return [...prev, { id, quantity: 1 }];
     });
   };
 
   const removeFromCart = (id: number) => {
-    setCart(prev => {
-      const existing = prev.find(item => item.id === id);
+    setCart((prev) => {
+      const existing = prev.find((item) => item.id === id);
       if (existing && existing.quantity > 1) {
-        return prev.map(item => item.id === id ? { ...item, quantity: item.quantity - 1 } : item);
+        return prev.map((item) =>
+          item.id === id ? { ...item, quantity: item.quantity - 1 } : item,
+        );
       }
-      return prev.filter(item => item.id !== id);
+      return prev.filter((item) => item.id !== id);
     });
   };
 
   const submitOrder = () => {
-    const orderItems = cart.map(item => ({ menuItemId: item.id, quantity: item.quantity }));
+    const orderItems = cart.map((item) => ({
+      menuItemId: item.id,
+      quantity: item.quantity,
+    }));
     const totalAmount = cart.reduce((acc, cartItem) => {
-      const menuItem = menu.find(m => m.id === cartItem.id);
+      const menuItem = menu.find((m) => m.id === cartItem.id);
       return acc + (menuItem ? menuItem.price * cartItem.quantity : 0);
     }, 0);
 
-    createOrder.mutate({
-      order: {
-        userId: user!.id,
-        roomId: null,
-        type: "dine_in",
-        totalAmount,
-        status: "pending"
+    createOrder.mutate(
+      {
+        order: {
+          userId: user!.id,
+          roomId: null,
+          type: "dine_in",
+          totalAmount,
+          status: "pending",
+        },
+        items: orderItems,
       },
-      items: orderItems
-    }, {
-      onSuccess: () => {
-        setCart([]);
-        toast({ title: "Order Placed", description: "Your order has been submitted." });
-      }
-    });
+      {
+        onSuccess: () => {
+          setCart([]);
+          toast({
+            title: "Order Placed",
+            description: "Your order has been submitted.",
+          });
+        },
+      },
+    );
   };
 
   const total = cart.reduce((acc, cartItem) => {
-    const menuItem = menu.find(m => m.id === cartItem.id);
+    const menuItem = menu.find((m) => m.id === cartItem.id);
     return acc + (menuItem ? menuItem.price * cartItem.quantity : 0);
   }, 0);
 
@@ -83,10 +104,16 @@ export default function RestaurantPage() {
       <div className="bg-primary py-20 text-primary-foreground relative overflow-hidden">
         {/* luxury restaurant food plating */}
         <div className="absolute inset-0 opacity-20">
-            <img src="https://pixabay.com/get/g1c6cf4c02087bc6c3c594195d5527a8731998a28575480eef312df36f0b8e11d3dc3fc325aec363efa5b33c59c862079dc96e4372485704fc3819d0a458e2ea2_1280.jpg" className="w-full h-full object-cover" alt="Restaurant Background"/>
+          <img
+            src="https://pixabay.com/get/g1c6cf4c02087bc6c3c594195d5527a8731998a28575480eef312df36f0b8e11d3dc3fc325aec363efa5b33c59c862079dc96e4372485704fc3819d0a458e2ea2_1280.jpg"
+            className="w-full h-full object-cover"
+            alt="Restaurant Background"
+          />
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <h1 className="font-display text-6xl font-bold mb-4">La Table</h1>
+          <h1 className="font-display text-6xl font-bold mb-4">
+            Fosuwa Special
+          </h1>
           <p className="text-xl text-primary-foreground/80 max-w-2xl mx-auto font-light">
             A culinary experience curated with passion and local ingredients.
           </p>
@@ -98,9 +125,9 @@ export default function RestaurantPage() {
           <div className="flex justify-center mb-12">
             <TabsList className="bg-muted h-auto p-1 rounded-full">
               {categories.map((cat) => (
-                <TabsTrigger 
-                  key={cat} 
-                  value={cat} 
+                <TabsTrigger
+                  key={cat}
+                  value={cat}
                   className="rounded-full px-8 py-3 text-base capitalize data-[state=active]:bg-white data-[state=active]:shadow-sm"
                 >
                   {cat}
@@ -110,52 +137,72 @@ export default function RestaurantPage() {
           </div>
 
           {categories.map((category) => (
-            <TabsContent key={category} value={category} className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {menu.filter(item => item.category === category).map((item) => (
-                <div key={item.id} className="flex gap-4 items-start group p-4 rounded-xl hover:bg-muted/30 transition-colors">
-                  {item.image && (
-                    <div className="flex-shrink-0">
-                      <img 
-                        src={item.image} 
-                        alt={item.name}
-                        className="w-24 h-24 object-cover rounded-lg"
-                      />
-                    </div>
-                  )}
-                  <div className="space-y-1 flex-1">
-                    <h3 className="font-display text-xl font-bold text-primary group-hover:text-accent transition-colors">
-                      {item.name}
-                    </h3>
-                    <p className="text-muted-foreground text-sm max-w-lg leading-relaxed">
-                      {item.description}
-                    </p>
-                    <div className="flex items-center justify-between pt-2">
-                      <div className="text-lg font-semibold tabular-nums text-foreground/80">
-                        ${(item.price / 100).toFixed(2)}
+            <TabsContent
+              key={category}
+              value={category}
+              className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
+            >
+              {menu
+                .filter((item) => item.category === category)
+                .map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex gap-4 items-start group p-4 rounded-xl hover:bg-muted/30 transition-colors"
+                  >
+                    {item.image && (
+                      <div className="flex-shrink-0">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-24 h-24 object-cover rounded-lg"
+                        />
                       </div>
-                      {user ? (
-                        cart.find(c => c.id === item.id) ? (
-                          <div className="flex items-center gap-2">
-                            <Button size="icon" variant="outline" onClick={() => removeFromCart(item.id)}>
-                              <Minus className="h-4 w-4" />
+                    )}
+                    <div className="space-y-1 flex-1">
+                      <h3 className="font-display text-xl font-bold text-primary group-hover:text-accent transition-colors">
+                        {item.name}
+                      </h3>
+                      <p className="text-muted-foreground text-sm max-w-lg leading-relaxed">
+                        {item.description}
+                      </p>
+                      <div className="flex items-center justify-between pt-2">
+                        <div className="text-lg font-semibold tabular-nums text-foreground/80">
+                          ${(item.price / 100).toFixed(2)}
+                        </div>
+                        {user ? (
+                          cart.find((c) => c.id === item.id) ? (
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="icon"
+                                variant="outline"
+                                onClick={() => removeFromCart(item.id)}
+                              >
+                                <Minus className="h-4 w-4" />
+                              </Button>
+                              <span className="w-4 text-center text-sm font-medium">
+                                {cart.find((c) => c.id === item.id)?.quantity}
+                              </span>
+                              <Button
+                                size="icon"
+                                onClick={() => addToCart(item.id)}
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button onClick={() => addToCart(item.id)}>
+                              Order
                             </Button>
-                            <span className="w-4 text-center text-sm font-medium">{cart.find(c => c.id === item.id)?.quantity}</span>
-                            <Button size="icon" onClick={() => addToCart(item.id)}>
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          )
                         ) : (
-                          <Button onClick={() => addToCart(item.id)}>Order</Button>
-                        )
-                      ) : (
-                        <Link href="/login">
-                          <Button variant="outline">Sign in to Order</Button>
-                        </Link>
-                      )}
+                          <Link href="/login">
+                            <Button variant="outline">Sign in to Order</Button>
+                          </Link>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </TabsContent>
           ))}
         </Tabs>
@@ -175,16 +222,25 @@ export default function RestaurantPage() {
                   <DialogTitle>Review Your Order</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
-                  {cart.map(item => {
-                    const menuItem = menu.find(m => m.id === item.id);
+                  {cart.map((item) => {
+                    const menuItem = menu.find((m) => m.id === item.id);
                     if (!menuItem) return null;
                     return (
-                      <div key={item.id} className="flex justify-between items-center text-sm">
+                      <div
+                        key={item.id}
+                        className="flex justify-between items-center text-sm"
+                      >
                         <div>
-                          <p className="font-medium">{item.quantity}x {menuItem.name}</p>
-                          <p className="text-muted-foreground text-xs">${(menuItem.price / 100).toFixed(2)} each</p>
+                          <p className="font-medium">
+                            {item.quantity}x {menuItem.name}
+                          </p>
+                          <p className="text-muted-foreground text-xs">
+                            ${(menuItem.price / 100).toFixed(2)} each
+                          </p>
                         </div>
-                        <p className="font-semibold">${((menuItem.price * item.quantity) / 100).toFixed(2)}</p>
+                        <p className="font-semibold">
+                          ${((menuItem.price * item.quantity) / 100).toFixed(2)}
+                        </p>
                       </div>
                     );
                   })}
@@ -192,10 +248,19 @@ export default function RestaurantPage() {
                     <span>Total</span>
                     <span>${(total / 100).toFixed(2)}</span>
                   </div>
-                  <Button className="w-full" onClick={submitOrder} disabled={createOrder.isPending}>
+                  <Button
+                    className="w-full"
+                    onClick={submitOrder}
+                    disabled={createOrder.isPending}
+                  >
                     {createOrder.isPending ? "Placing Order..." : "Place Order"}
                   </Button>
-                  <Button type="button" variant="outline" className="w-full" onClick={() => setCart([])}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setCart([])}
+                  >
                     Clear Cart
                   </Button>
                 </div>
