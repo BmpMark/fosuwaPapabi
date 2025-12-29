@@ -16,12 +16,15 @@ import { Plus, Minus, ShoppingBag } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 export default function RestaurantPage() {
   const { menu, isLoadingMenu, createOrder } = useRestaurant();
   const { user } = useAuth();
   const { toast } = useToast();
   const [cart, setCart] = useState<{ id: number; quantity: number }[]>([]);
+  const [orderType, setOrderType] = useState<"dine_in" | "take_away">("dine_in");
 
   if (isLoadingMenu) {
     return (
@@ -76,7 +79,7 @@ export default function RestaurantPage() {
         order: {
           userId: user!.id,
           roomId: null,
-          type: "dine_in",
+          type: orderType,
           totalAmount,
           status: "pending",
         },
@@ -85,6 +88,7 @@ export default function RestaurantPage() {
       {
         onSuccess: () => {
           setCart([]);
+          setOrderType("dine_in");
           toast({
             title: "Order Placed",
             description: "Your order has been submitted.",
@@ -221,7 +225,7 @@ export default function RestaurantPage() {
                 <DialogHeader>
                   <DialogTitle>Review Your Order</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {cart.map((item) => {
                     const menuItem = menu.find((m) => m.id === item.id);
                     if (!menuItem) return null;
@@ -244,6 +248,25 @@ export default function RestaurantPage() {
                       </div>
                     );
                   })}
+                  
+                  <div className="border-t pt-4 space-y-3">
+                    <Label className="text-base font-semibold">Order Type</Label>
+                    <RadioGroup value={orderType} onValueChange={(value) => setOrderType(value as "dine_in" | "take_away")}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="dine_in" id="dine_in" />
+                        <Label htmlFor="dine_in" className="font-normal cursor-pointer">
+                          Dine In
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="take_away" id="take_away" />
+                        <Label htmlFor="take_away" className="font-normal cursor-pointer">
+                          Take Away
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
                   <div className="border-t pt-4 flex justify-between font-bold text-lg">
                     <span>Total</span>
                     <span>${(total / 100).toFixed(2)}</span>
