@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, Bed, Calendar, Utensils, 
-  Receipt, ClipboardList, Settings, LogOut
+  Receipt, ClipboardList, BarChart3, Settings, LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -28,6 +28,7 @@ export function DashboardSidebar() {
     { href: "/dashboard/reservations", label: "Reservations", icon: Calendar },
     { href: "/dashboard/menu", label: "Menu Items", icon: ClipboardList },
     { href: "/dashboard/kitchen", label: "Kitchen Orders", icon: Utensils },
+    { href: "/dashboard/reports", label: "Reports", icon: BarChart3 },
   ];
 
   const links = isAdmin ? adminLinks : guestLinks;
