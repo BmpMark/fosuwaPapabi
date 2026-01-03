@@ -21,8 +21,8 @@ export default function HomePage() {
             Redefine Luxury
           </h1>
           <p className="text-lg md:text-xl text-white/90 max-w-2xl mb-10 leading-relaxed font-light drop-shadow-md">
-            Experience an unforgettable stay at Lumière, where modern elegance
-            meets timeless comfort in the town.
+            Experience an unforgettable stay at Fosua Papabi, where modern
+            elegance meets timeless comfort in the town.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link href="/rooms">
