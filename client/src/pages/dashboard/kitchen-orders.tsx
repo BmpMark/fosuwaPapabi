@@ -9,14 +9,14 @@ import { useLocation } from "wouter";
 
 export default function KitchenOrdersPage() {
   const { user } = useAuth();
-  const { orders, updateStatus } = useRestaurant();
+  const { orders, updateOrderStatus } = useRestaurant();
   const [, setLocation] = useLocation();
 
   const handleUpdateStatus = (id: number, status: string) => {
-    updateStatus.mutate({ id, status });
+    updateOrderStatus.mutate({ id, status });
   };
 
-  if (!user || (user.role !== "staff" && user.role !== "manager")) {
+  if (!user || (user.role !== "staff" && user.role !== "manager" && user.role !== "admin")) {
     setLocation("/dashboard");
     return null;
   }
@@ -38,14 +38,14 @@ export default function KitchenOrdersPage() {
     }
   };
 
-  // Show only pending and preparing orders, prioritize them
-  const activeOrders = orders.filter(o => o.status === "pending" || o.status === "preparing").sort((a, b) => {
-    if (a.status === "pending" && b.status !== "pending") return -1;
-    if (a.status !== "pending" && b.status === "pending") return 1;
-    return 0;
+  // Show only pending, preparing, and ready orders in active section
+  const activeStatuses = ["pending", "preparing", "ready"];
+  const activeOrders = orders.filter(o => activeStatuses.includes(o.status)).sort((a, b) => {
+    const statusOrder = { "pending": 0, "preparing": 1, "ready": 2 };
+    return (statusOrder[a.status as keyof typeof statusOrder] ?? 99) - (statusOrder[b.status as keyof typeof statusOrder] ?? 99);
   });
 
-  const completedOrders = orders.filter(o => o.status !== "pending" && o.status !== "preparing");
+  const completedOrders = orders.filter(o => !activeStatuses.includes(o.status));
 
   return (
     <Layout>
@@ -57,7 +57,6 @@ export default function KitchenOrdersPage() {
             <p className="text-muted-foreground">Manage and track all incoming orders</p>
           </div>
 
-          {/* Active Orders Section */}
           <div className="space-y-4">
             <h2 className="font-display text-xl font-bold flex items-center gap-2">
               Active Orders
@@ -81,29 +80,19 @@ export default function KitchenOrdersPage() {
                         <div className="flex justify-between items-start">
                           <div>
                             <p className="text-sm text-muted-foreground">Order #{order.id}</p>
-                            <p className="text-sm text-muted-foreground">Type: {order.type === "dine_in" ? "Dine In" : "Room Service"}</p>
+                            <p className="text-sm text-muted-foreground">Type: {order.type.replace('_', ' ')}</p>
                           </div>
                           <Badge className={getStatusColor(order.status)}>
                             {order.status}
                           </Badge>
                         </div>
                         
-                        {order.orderItems && order.orderItems.length > 0 && (
-                          <div className="space-y-2 pt-4 border-t">
-                            {order.orderItems.map((item, idx) => (
-                              <div key={idx} className="flex justify-between text-sm">
-                                <span>{item.quantity}x Item #{item.menuItemId}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        
                         <div className="pt-4 border-t flex gap-2">
                           {order.status === "pending" && (
                             <Button 
                               size="sm" 
                               onClick={() => handleUpdateStatus(order.id, "preparing")}
-                              disabled={updateStatus.isPending}
+                              disabled={updateOrderStatus.isPending}
                             >
                               Start Preparing
                             </Button>
@@ -113,7 +102,7 @@ export default function KitchenOrdersPage() {
                               size="sm" 
                               variant="secondary"
                               onClick={() => handleUpdateStatus(order.id, "ready")}
-                              disabled={updateStatus.isPending}
+                              disabled={updateOrderStatus.isPending}
                             >
                               Mark Ready
                             </Button>
@@ -123,7 +112,7 @@ export default function KitchenOrdersPage() {
                               size="sm" 
                               variant="outline"
                               onClick={() => handleUpdateStatus(order.id, "completed")}
-                              disabled={updateStatus.isPending}
+                              disabled={updateOrderStatus.isPending}
                             >
                               Complete
                             </Button>
@@ -131,6 +120,7 @@ export default function KitchenOrdersPage() {
                         </div>
 
                         <div className="pt-2 border-t text-sm">
+                          <p className="text-muted-foreground font-medium">Payment: {order.paymentMethod.replace('_', ' ')}</p>
                           <p className="text-muted-foreground">Total: ${(order.totalAmount / 100).toFixed(2)}</p>
                         </div>
                       </div>
@@ -141,34 +131,23 @@ export default function KitchenOrdersPage() {
             )}
           </div>
 
-          {/* Completed Orders Section */}
           {completedOrders.length > 0 && (
             <div className="space-y-4">
-              <h2 className="font-display text-xl font-bold">Completed Orders</h2>
+              <h2 className="font-display text-xl font-bold">Completed & Other Orders</h2>
               <div className="grid gap-4">
-                {completedOrders.map((order) => (
+                {completedOrders.slice(0, 10).map((order) => (
                   <Card key={order.id} data-testid={`card-order-completed-${order.id}`} className="opacity-75">
                     <CardContent className="pt-6">
                       <div className="space-y-4">
                         <div className="flex justify-between items-start">
                           <div>
                             <p className="text-sm text-muted-foreground">Order #{order.id}</p>
-                            <p className="text-sm text-muted-foreground">Type: {order.type === "dine_in" ? "Dine In" : "Room Service"}</p>
+                            <p className="text-sm text-muted-foreground">Type: {order.type.replace('_', ' ')}</p>
                           </div>
                           <Badge className={getStatusColor(order.status)}>
                             {order.status}
                           </Badge>
                         </div>
-                        
-                        {order.orderItems && order.orderItems.length > 0 && (
-                          <div className="space-y-2 pt-4 border-t">
-                            {order.orderItems.map((item, idx) => (
-                              <div key={idx} className="flex justify-between text-sm">
-                                <span>{item.quantity}x Item #{item.menuItemId}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
                         
                         <div className="pt-2 border-t text-sm">
                           <p className="text-muted-foreground">Total: ${(order.totalAmount / 100).toFixed(2)}</p>

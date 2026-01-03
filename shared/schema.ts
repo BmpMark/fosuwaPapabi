@@ -103,5 +103,7 @@ export type User = typeof users.$inferSelect;
 export type Room = typeof rooms.$inferSelect;
 export type Reservation = typeof reservations.$inferSelect;
 export type MenuItem = typeof menuItems.$inferSelect;
+export type InsertMenuItem = typeof menuItems.$inferInsert;
 export type Order = typeof orders.$inferSelect;
+export type InsertOrder = typeof orders.$inferInsert;
 export type OrderItem = typeof orderItems.$inferSelect;
