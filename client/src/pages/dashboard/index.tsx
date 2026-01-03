@@ -4,7 +4,9 @@ import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { useReservations } from "@/hooks/use-reservations";
 import { useRestaurant } from "@/hooks/use-restaurant";
-import { Calendar, DollarSign, Utensils, Users } from "lucide-react";
+import { Calendar, DollarSign, Utensils, Users, BarChart3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -16,9 +18,19 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex gap-8">
         <DashboardSidebar />
         <div className="flex-1 space-y-8">
-          <div>
-            <h1 className="font-display text-3xl font-bold mb-2">Welcome back, {user.name}</h1>
-            <p className="text-muted-foreground">Here's what's happening today.</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="font-display text-3xl font-bold mb-2">Welcome back, {user.name}</h1>
+              <p className="text-muted-foreground">Here's what's happening today.</p>
+            </div>
+            {(user.role === "admin" || user.role === "staff") && (
+              <Link href="/dashboard/reports">
+                <Button className="gap-2">
+                  <BarChart3 className="h-4 w-4" />
+                  View Reports
+                </Button>
+              </Link>
+            )}
           </div>
 
           {user.role === "admin" || user.role === "staff" ? <AdminStats /> : <GuestStats />}
