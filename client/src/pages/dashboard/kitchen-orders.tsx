@@ -9,8 +9,12 @@ import { useLocation } from "wouter";
 
 export default function KitchenOrdersPage() {
   const { user } = useAuth();
-  const { orders } = useRestaurant();
+  const { orders, updateStatus } = useRestaurant();
   const [, setLocation] = useLocation();
+
+  const handleUpdateStatus = (id: number, status: string) => {
+    updateStatus.mutate({ id, status });
+  };
 
   if (!user || (user.role !== "staff" && user.role !== "manager")) {
     setLocation("/dashboard");
@@ -94,6 +98,38 @@ export default function KitchenOrdersPage() {
                           </div>
                         )}
                         
+                        <div className="pt-4 border-t flex gap-2">
+                          {order.status === "pending" && (
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleUpdateStatus(order.id, "preparing")}
+                              disabled={updateStatus.isPending}
+                            >
+                              Start Preparing
+                            </Button>
+                          )}
+                          {order.status === "preparing" && (
+                            <Button 
+                              size="sm" 
+                              variant="secondary"
+                              onClick={() => handleUpdateStatus(order.id, "ready")}
+                              disabled={updateStatus.isPending}
+                            >
+                              Mark Ready
+                            </Button>
+                          )}
+                          {order.status === "ready" && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleUpdateStatus(order.id, "completed")}
+                              disabled={updateStatus.isPending}
+                            >
+                              Complete
+                            </Button>
+                          )}
+                        </div>
+
                         <div className="pt-2 border-t text-sm">
                           <p className="text-muted-foreground">Total: ${(order.totalAmount / 100).toFixed(2)}</p>
                         </div>
