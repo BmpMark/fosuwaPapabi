@@ -19,7 +19,7 @@ export function DashboardSidebar() {
     { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
     { href: "/dashboard/reservations", label: "My Reservations", icon: Calendar },
     { href: "/dashboard/orders", label: "Room Service", icon: Utensils },
-    { href: "/dashboard/bills", label: "My Bills", icon: Receipt },
+    { href: "/dashboard/bill", label: "My Bills", icon: Receipt },
   ];
 
   const adminLinks = [

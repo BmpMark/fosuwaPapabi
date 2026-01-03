@@ -24,7 +24,8 @@ export default function RestaurantPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [cart, setCart] = useState<{ id: number; quantity: number }[]>([]);
-  const [orderType, setOrderType] = useState<"dine_in" | "take_away">("dine_in");
+  const [orderType, setOrderType] = useState<"dine_in" | "take_away" | "room_service">("dine_in");
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "room_folio">("cash");
 
   if (isLoadingMenu) {
     return (
@@ -80,6 +81,7 @@ export default function RestaurantPage() {
           userId: user!.id,
           roomId: null,
           type: orderType,
+          paymentMethod,
           totalAmount,
           status: "pending",
         },
@@ -251,7 +253,7 @@ export default function RestaurantPage() {
                   
                   <div className="border-t pt-4 space-y-3">
                     <Label className="text-base font-semibold">Order Type</Label>
-                    <RadioGroup value={orderType} onValueChange={(value) => setOrderType(value as "dine_in" | "take_away")}>
+                    <RadioGroup value={orderType} onValueChange={(value) => setOrderType(value as any)}>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="dine_in" id="dine_in" />
                         <Label htmlFor="dine_in" className="font-normal cursor-pointer">
@@ -262,6 +264,30 @@ export default function RestaurantPage() {
                         <RadioGroupItem value="take_away" id="take_away" />
                         <Label htmlFor="take_away" className="font-normal cursor-pointer">
                           Take Away
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="room_service" id="room_service" />
+                        <Label htmlFor="room_service" className="font-normal cursor-pointer">
+                          Room Service
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  <div className="border-t pt-4 space-y-3">
+                    <Label className="text-base font-semibold">Payment Method</Label>
+                    <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as any)}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="cash" id="cash" />
+                        <Label htmlFor="cash" className="font-normal cursor-pointer">
+                          Cash / Card
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="room_folio" id="room_folio" />
+                        <Label htmlFor="room_folio" className="font-normal cursor-pointer">
+                          Charge to Room Folio
                         </Label>
                       </div>
                     </RadioGroup>

@@ -60,7 +60,8 @@ export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
   userId: integer("user_id"), // Nullable for walk-in? Let's say required for now or handled by staff
   roomId: integer("room_id"), // Optional: if room service
-  type: text("type").notNull(), // dine_in, room_service
+  type: text("type").notNull(), // dine_in, room_service, take_away
+  paymentMethod: text("payment_method").notNull().default("cash"), // cash, room_folio
   status: text("status").notNull().default("pending"), // pending, preparing, delivered, completed, billed
   totalAmount: integer("total_amount").notNull(),
   createdAt: timestamp("created_at").defaultNow(),

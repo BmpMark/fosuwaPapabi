@@ -117,11 +117,6 @@ export class DatabaseStorage implements IStorage {
   async createOrder(order: typeof orders.$inferInsert, items: { menuItemId: number; quantity: number }[]): Promise<Order> {
     const [newOrder] = await db.insert(orders).values(order).returning();
     
-    // Fetch menu item prices to record priceAtTime
-    const menuItemIds = items.map(i => i.menuItemId);
-    // Note: In a real app we'd fetch prices. For MVP assuming prices are stable or fetching one by one. 
-    // Let's do a simple loop or assumed passed prices? No, best to fetch.
-    // For MVP, let's assume we can get them.
     for (const item of items) {
        const [menuItem] = await db.select().from(menuItems).where(eq(menuItems.id, item.menuItemId));
        if (menuItem) {
