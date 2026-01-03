@@ -82,8 +82,19 @@ export class DatabaseStorage implements IStorage {
     return true;
   }
 
-  async getReservations(): Promise<Reservation[]> {
-    return await db.select().from(reservations);
+  async getReservations(): Promise<(Reservation & { guestName?: string; guestPhone?: string })[]> {
+    const allReservations = await db.select().from(reservations);
+    const reservationsWithUsers = await Promise.all(
+      allReservations.map(async (res) => {
+        const user = await this.getUser(res.userId);
+        return {
+          ...res,
+          guestName: user?.name,
+          guestPhone: user?.phoneNumber || undefined,
+        };
+      })
+    );
+    return reservationsWithUsers;
   }
 
   async createReservation(reservation: typeof reservations.$inferInsert): Promise<Reservation> {

@@ -101,8 +101,11 @@ export default function ReservationsPage() {
                           </div>
                         </div>
                         {isAdmin && (
-                          <div className="text-xs text-muted-foreground pt-2 border-t">
-                            Guest ID: {reservation.userId}
+                          <div className="text-xs text-muted-foreground pt-2 border-t space-y-1">
+                            <div>Guest: <span className="font-medium text-foreground">{(reservation as any).guestName || `ID: ${reservation.userId}`}</span></div>
+                            {(reservation as any).guestPhone && (
+                              <div>Phone: <span className="font-medium text-foreground">{(reservation as any).guestPhone}</span></div>
+                            )}
                           </div>
                         )}
                       </div>
