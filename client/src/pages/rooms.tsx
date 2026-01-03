@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
-import { Users, Wifi, BedDouble, ArrowRight } from "lucide-react";
+import { Users, Wifi, BedDouble, ArrowRight, Calendar as CalendarIcon } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useReservations } from "@/hooks/use-reservations";
@@ -15,6 +15,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
 
 const bookingSchema = z.object({
   checkIn: z.string().min(1, "Check-in date required"),
@@ -58,8 +60,19 @@ export default function RoomsPage() {
 }
 
 function RoomCard({ room, user }: { room: any; user: any }) {
-  const { createReservation } = useReservations();
+  const { createReservation, reservations } = useReservations();
   const [isOpen, setIsOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
+  const roomEvents = (reservations || [])
+    .filter((r: any) => r.roomId === room.id && r.status !== 'cancelled')
+    .map((r: any) => ({
+      title: r.status === 'checked_in' ? 'Occupied' : 'Reserved',
+      start: r.checkIn,
+      end: r.checkOut,
+      backgroundColor: r.status === 'checked_in' ? '#ef4444' : '#f59e0b',
+      borderColor: 'transparent'
+    }));
   
   // Hardcoded images for demo based on room type
   const getRoomImage = (type: string) => {
@@ -127,7 +140,33 @@ function RoomCard({ room, user }: { room: any; user: any }) {
         </div>
       </CardContent>
 
-      <CardFooter className="pt-4 border-t border-border/50">
+      <CardFooter className="pt-4 border-t border-border/50 gap-2">
+        <Dialog open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="icon" className="shrink-0">
+              <CalendarIcon className="w-4 h-4" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Room {room.number} Availability</DialogTitle>
+            </DialogHeader>
+            <div className="p-4 bg-white rounded-lg">
+              <FullCalendar
+                plugins={[dayGridPlugin]}
+                initialView="dayGridMonth"
+                events={roomEvents}
+                headerToolbar={{
+                  left: 'prev,next today',
+                  center: 'title',
+                  right: ''
+                }}
+                height="auto"
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {user ? (
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>

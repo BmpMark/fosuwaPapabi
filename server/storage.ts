@@ -98,6 +98,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createReservation(reservation: typeof reservations.$inferInsert): Promise<Reservation> {
+    // Prevent double booking
+    const existing = await db.select().from(reservations).where(
+      eq(reservations.roomId, reservation.roomId)
+    );
+    
+    const overlap = existing.some(r => {
+      if (r.status === 'cancelled') return false;
+      const start = new Date(r.checkIn);
+      const end = new Date(r.checkOut);
+      const newStart = new Date(reservation.checkIn);
+      const newEnd = new Date(reservation.checkOut);
+      return newStart < end && newEnd > start;
+    });
+
+    if (overlap) {
+      throw new Error("Room is already booked for these dates");
+    }
+
     const [newReservation] = await db.insert(reservations).values(reservation).returning();
     return newReservation;
   }
