@@ -39,7 +39,8 @@ export default function AuthPage() {
       role: "guest",
       name: "",
       username: "",
-      password: ""
+      password: "",
+      phoneNumber: ""
     }
   });
 
@@ -158,6 +159,19 @@ export default function AuthPage() {
                             <FormLabel>Full Name</FormLabel>
                             <FormControl>
                               <Input data-testid="input-name" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={registerForm.control}
+                        name="phoneNumber"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Phone Number</FormLabel>
+                            <FormControl>
+                              <Input data-testid="input-phone" placeholder="+1 (555) 000-0000" {...field} value={field.value || ""} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
