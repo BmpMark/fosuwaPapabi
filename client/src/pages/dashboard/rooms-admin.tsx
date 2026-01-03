@@ -165,7 +165,7 @@ export default function RoomsAdminPage() {
                       </div>
                       <p className="text-muted-foreground">{room.description}</p>
                       <div className="flex gap-6 text-sm">
-                        <span><strong>Price:</strong> ${(room.price / 100).toFixed(2)}</span>
+                        <span><strong>Price:</strong> GH₵{(room.price / 100).toFixed(2)}</span>
                         <span><strong>Capacity:</strong> {room.capacity} {room.capacity === 1 ? "guest" : "guests"}</span>
                       </div>
                     </div>

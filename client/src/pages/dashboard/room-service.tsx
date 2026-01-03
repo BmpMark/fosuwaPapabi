@@ -102,7 +102,7 @@ export default function RoomService() {
                     <div className="flex-1">
                       <h3 className="font-bold font-display">{item.name}</h3>
                       <p className="text-sm text-muted-foreground">{item.description}</p>
-                      <p className="font-semibold mt-1">${(item.price / 100).toFixed(2)}</p>
+                      <p className="font-semibold mt-1">GH₵{(item.price / 100).toFixed(2)}</p>
                     </div>
                     {cart.find(c => c.id === item.id) ? (
                       <div className="flex items-center gap-3">
@@ -140,13 +140,13 @@ export default function RoomService() {
                       return (
                         <div key={item.id} className="flex justify-between text-sm">
                           <span>{item.quantity}x {menuItem.name}</span>
-                          <span>${((menuItem.price * item.quantity) / 100).toFixed(2)}</span>
+                          <span>GH₵{((menuItem.price * item.quantity) / 100).toFixed(2)}</span>
                         </div>
                       );
                     })}
                     <div className="border-t pt-4 flex justify-between font-bold text-lg">
                       <span>Total</span>
-                      <span>${(total / 100).toFixed(2)}</span>
+                      <span>GH₵{(total / 100).toFixed(2)}</span>
                     </div>
 
                     <div className="space-y-2">

@@ -102,11 +102,11 @@ export default function ReportsPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-4 bg-muted rounded-lg">
                 <div className="text-sm text-muted-foreground">Total Revenue</div>
-                <div className="text-2xl font-bold">${((roomRevenue + restaurantRevenue) / 100).toLocaleString()}</div>
+                <div className="text-2xl font-bold">GH₵{((roomRevenue + restaurantRevenue) / 100).toLocaleString()}</div>
               </div>
               <div className="p-4 bg-muted rounded-lg">
                 <div className="text-sm text-muted-foreground">ADR (Avg Daily Rate)</div>
-                <div className="text-2xl font-bold">${(roomRevenue / (reservations.length || 1) / 100).toFixed(2)}</div>
+                <div className="text-2xl font-bold">GH₵{(roomRevenue / (reservations.length || 1) / 100).toFixed(2)}</div>
               </div>
               <div className="p-4 bg-muted rounded-lg">
                 <div className="text-sm text-muted-foreground">Active Orders</div>

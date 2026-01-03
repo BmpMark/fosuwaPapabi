@@ -173,7 +173,7 @@ export default function RestaurantPage() {
                       </p>
                       <div className="flex items-center justify-between pt-2">
                         <div className="text-lg font-semibold tabular-nums text-foreground/80">
-                          ${(item.price / 100).toFixed(2)}
+                          GH₵{(item.price / 100).toFixed(2)}
                         </div>
                         {user ? (
                           cart.find((c) => c.id === item.id) ? (
@@ -241,11 +241,11 @@ export default function RestaurantPage() {
                             {item.quantity}x {menuItem.name}
                           </p>
                           <p className="text-muted-foreground text-xs">
-                            ${(menuItem.price / 100).toFixed(2)} each
+                            GH₵{(menuItem.price / 100).toFixed(2)} each
                           </p>
                         </div>
                         <p className="font-semibold">
-                          ${((menuItem.price * item.quantity) / 100).toFixed(2)}
+                          GH₵{((menuItem.price * item.quantity) / 100).toFixed(2)}
                         </p>
                       </div>
                     );
@@ -295,7 +295,7 @@ export default function RestaurantPage() {
 
                   <div className="border-t pt-4 flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span>${(total / 100).toFixed(2)}</span>
+                    <span>GH₵{(total / 100).toFixed(2)}</span>
                   </div>
                   <Button
                     className="w-full"

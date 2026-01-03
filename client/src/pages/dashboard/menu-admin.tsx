@@ -185,7 +185,7 @@ export default function MenuAdminPage() {
                         </Button>
                       </div>
                       <p className="text-muted-foreground">{item.description}</p>
-                      <p className="text-sm font-semibold">${(item.price / 100).toFixed(2)}</p>
+                      <p className="text-sm font-semibold">GH₵{(item.price / 100).toFixed(2)}</p>
                     </div>
                   </div>
                 </CardContent>

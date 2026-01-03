@@ -55,7 +55,7 @@ function AdminStats() {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <StatCard 
         title="Total Revenue" 
-        value={`$${(totalRevenue / 100).toLocaleString()}`} 
+        value={`GH₵${(totalRevenue / 100).toLocaleString()}`} 
         icon={DollarSign} 
         desc="Combined from rooms & dining"
       />

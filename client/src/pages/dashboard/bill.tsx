@@ -37,12 +37,12 @@ export default function BillPage() {
                 {userReservations.map(r => (
                   <div key={r.id} className="flex justify-between border-b pb-2">
                     <span>Reservation #{r.id}</span>
-                    <span className="font-semibold">${(r.totalPrice / 100).toFixed(2)}</span>
+                    <span className="font-semibold">GH₵{(r.totalPrice / 100).toFixed(2)}</span>
                   </div>
                 ))}
                 <div className="flex justify-between font-bold text-lg pt-2">
                   <span>Room Total</span>
-                  <span>${(roomTotal / 100).toFixed(2)}</span>
+                  <span>GH₵{(roomTotal / 100).toFixed(2)}</span>
                 </div>
               </div>
             </CardContent>
@@ -57,12 +57,12 @@ export default function BillPage() {
                 {userOrders.map(o => (
                   <div key={o.id} className="flex justify-between border-b pb-2">
                     <span>Order #{o.id} ({o.paymentMethod})</span>
-                    <span className="font-semibold">${(o.totalAmount / 100).toFixed(2)}</span>
+                    <span className="font-semibold">GH₵{(o.totalAmount / 100).toFixed(2)}</span>
                   </div>
                 ))}
                 <div className="flex justify-between font-bold text-lg pt-2">
                   <span>Service Total</span>
-                  <span>${(orderTotal / 100).toFixed(2)}</span>
+                  <span>GH₵{(orderTotal / 100).toFixed(2)}</span>
                 </div>
               </div>
             </CardContent>
@@ -72,7 +72,7 @@ export default function BillPage() {
         <Card className="bg-primary text-primary-foreground">
           <CardContent className="p-6 flex justify-between items-center">
             <h2 className="text-2xl font-bold">Total Balance</h2>
-            <div className="text-3xl font-bold">${((roomTotal + orderTotal) / 100).toFixed(2)}</div>
+            <div className="text-3xl font-bold">GH₵{((roomTotal + orderTotal) / 100).toFixed(2)}</div>
           </CardContent>
         </Card>
       </div>

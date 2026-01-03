@@ -96,7 +96,7 @@ export default function ReservationsPage() {
                               Total Price
                             </p>
                             <p className="font-semibold">
-                              ${(reservation.totalPrice / 100).toFixed(2)}
+                              GH₵{(reservation.totalPrice / 100).toFixed(2)}
                             </p>
                           </div>
                         </div>
