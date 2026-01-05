@@ -33,7 +33,7 @@ export default function RoomsAdminPage() {
   const { rooms, createRoom, deleteRoom } = useRooms();
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  if (!user || (user.role !== "admin" && user.role !== "staff")) {
+  if (!user || (user.role !== "admin" && user.role !== "staff" && user.role !== "manager")) {
     setLocation("/dashboard");
     return null;
   }

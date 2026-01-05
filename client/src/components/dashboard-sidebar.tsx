@@ -13,7 +13,7 @@ export function DashboardSidebar() {
 
   if (!user) return null;
 
-  const isAdmin = user.role === "admin" || user.role === "staff";
+  const isAdmin = user.role === "admin" || user.role === "staff" || user.role === "manager";
 
   const guestLinks = [
     { href: "/dashboard", label: "Overview", icon: LayoutDashboard },

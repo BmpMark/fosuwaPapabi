@@ -35,7 +35,7 @@ export default function MenuAdminPage() {
   const { menu, createMenuItem, deleteMenuItem } = useRestaurant();
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  if (!user || (user.role !== "admin" && user.role !== "staff")) {
+  if (!user || (user.role !== "admin" && user.role !== "staff" && user.role !== "manager")) {
     setLocation("/dashboard");
     return null;
   }
