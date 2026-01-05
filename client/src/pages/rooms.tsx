@@ -123,8 +123,8 @@ function RoomCard({ room, user }: { room: any; user: any }) {
       <CardHeader>
         <div className="flex justify-between items-start mb-2">
           <Badge variant="outline" className="text-xs uppercase tracking-wider">{room.type}</Badge>
-          <div className="flex items-center text-muted-foreground text-xs">
-            <Users className="w-3 h-3 mr-1" /> {room.capacity} Guests
+          <div className="flex items-center text-muted-foreground text-xs gap-2">
+            <Users className="w-3 h-3" /> {room.capacity} Guests
           </div>
         </div>
         <CardTitle className="font-display text-2xl">{room.number} - {room.type}</CardTitle>

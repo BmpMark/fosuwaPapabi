@@ -54,7 +54,7 @@ export default function AuthPage() {
           className="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-overlay"
         />
         <div className="absolute inset-0 flex flex-col justify-center px-16">
-          <h1 className="font-display text-6xl font-bold mb-6">Welcome to Lumière</h1>
+          <h1 className="font-display text-6xl font-bold mb-6">Welcome to Fosua Papabi</h1>
           <p className="text-xl max-w-md font-light leading-relaxed">
             Sign in to manage your reservations, order room service, and experience luxury like never before.
           </p>
