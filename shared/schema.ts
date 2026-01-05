@@ -52,8 +52,6 @@ export const menuItems = pgTable("menu_items", {
   category: text("category").notNull(), // starter, main, dessert, drink
   available: boolean("available").notNull().default(true),
   image: text("image"), // image URL
-  stockLevel: integer("stock_level").notNull().default(0),
-  lowStockThreshold: integer("low_stock_threshold").notNull().default(5),
 });
 
 export const insertMenuItemSchema = createInsertSchema(menuItems).omit({ id: true });

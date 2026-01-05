@@ -22,8 +22,6 @@ const menuItemSchema = z.object({
   price: z.coerce.number().min(0, "Price must be positive"),
   category: z.enum(["starter", "main", "dessert", "drink"]),
   available: z.boolean().default(true),
-  stockLevel: z.coerce.number().min(0, "Stock level must be at least 0"),
-  lowStockThreshold: z.coerce.number().min(0, "Threshold must be at least 0"),
   image: z.string().url("Image must be a valid URL").optional().or(z.literal("")),
 });
 
@@ -42,7 +40,7 @@ export default function MenuAdminPage() {
 
   const form = useForm<MenuItemFormData>({
     resolver: zodResolver(menuItemSchema),
-    defaultValues: { available: true, category: "main", stockLevel: 20, lowStockThreshold: 5 },
+    defaultValues: { available: true, category: "main" },
   });
 
   const onSubmit = async (data: MenuItemFormData) => {
@@ -132,29 +130,13 @@ export default function MenuAdminPage() {
                         <FormMessage />
                       </FormItem>
                     )} />
-                      <FormField control={form.control} name="image" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Image URL</FormLabel>
-                          <FormControl><Input placeholder="https://example.com/image.jpg" {...field} /></FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField control={form.control} name="stockLevel" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Current Stock</FormLabel>
-                            <FormControl><Input type="number" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-                        <FormField control={form.control} name="lowStockThreshold" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Low Stock Alert Level</FormLabel>
-                            <FormControl><Input type="number" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-                      </div>
+                    <FormField control={form.control} name="image" render={({ field }) => (
+                      FormItem>
+                        <FormLabel>Image URL</FormLabel>
+                        <FormControl><Input placeholder="https://example.com/image.jpg" {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
                     <div className="flex gap-4">
                       <Button type="submit" disabled={createMenuItem.isPending}>
                         Add Item
@@ -191,16 +173,6 @@ export default function MenuAdminPage() {
                           <span className={`px-3 py-1 rounded-full text-sm font-medium ${item.available ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" : "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200"}`}>
                             {item.available ? "Available" : "Unavailable"}
                           </span>
-                          {item.stockLevel <= item.lowStockThreshold && (
-                            <span className="px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-full text-sm font-medium flex items-center gap-1">
-                              Low Stock: {item.stockLevel}
-                            </span>
-                          )}
-                          {item.stockLevel > item.lowStockThreshold && (
-                            <span className="px-3 py-1 bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200 rounded-full text-sm font-medium">
-                              Stock: {item.stockLevel}
-                            </span>
-                          )}
                         </div>
                         <Button 
                           size="icon" 
