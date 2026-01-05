@@ -6,6 +6,37 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import { useState, useEffect } from "react";
+import { formatDistanceToNow } from "date-fns";
+import { Clock } from "lucide-react";
+
+function OrderTimer({ createdAt }: { createdAt: Date | string }) {
+  const [elapsed, setElapsed] = useState("");
+
+  useEffect(() => {
+    const update = () => {
+      const date = new Date(createdAt);
+      setElapsed(formatDistanceToNow(date, { addSuffix: true }));
+    };
+    update();
+    const interval = setInterval(update, 60000);
+    return () => clearInterval(interval);
+  }, [createdAt]);
+
+  const getUrgencyColor = () => {
+    const minutes = (new Date().getTime() - new Date(createdAt).getTime()) / 60000;
+    if (minutes > 30) return "text-red-500 font-bold animate-pulse";
+    if (minutes > 15) return "text-orange-500 font-semibold";
+    return "text-muted-foreground";
+  };
+
+  return (
+    <div className={`flex items-center gap-1.5 text-sm ${getUrgencyColor()}`}>
+      <Clock className="h-4 w-4" />
+      <span>Ordered {elapsed}</span>
+    </div>
+  );
+}
 
 export default function KitchenOrdersPage() {
   const { user } = useAuth();
@@ -74,13 +105,18 @@ export default function KitchenOrdersPage() {
             ) : (
               <div className="grid gap-4">
                 {activeOrders.map((order) => (
-                  <Card key={order.id} data-testid={`card-order-${order.id}`} className="border-l-4 border-l-yellow-400">
+                  <Card key={order.id} data-testid={`card-order-${order.id}`} className={`border-l-4 ${
+                    ((new Date().getTime() - new Date(order.createdAt).getTime()) / 60000) > 30 ? "border-l-red-500 shadow-md shadow-red-100 dark:shadow-red-900/20" : 
+                    ((new Date().getTime() - new Date(order.createdAt).getTime()) / 60000) > 15 ? "border-l-orange-400" : 
+                    "border-l-yellow-400"
+                  }`}>
                     <CardContent className="pt-6">
                       <div className="space-y-4">
                         <div className="flex justify-between items-start">
                           <div>
                             <p className="text-sm text-muted-foreground">Order #{order.id}</p>
                             <p className="text-sm text-muted-foreground">Type: {order.type.replace('_', ' ')}</p>
+                            <OrderTimer createdAt={order.createdAt} />
                           </div>
                           <Badge className={getStatusColor(order.status)}>
                             {order.status}
@@ -143,6 +179,10 @@ export default function KitchenOrdersPage() {
                           <div>
                             <p className="text-sm text-muted-foreground">Order #{order.id}</p>
                             <p className="text-sm text-muted-foreground">Type: {order.type.replace('_', ' ')}</p>
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              <span>Ordered {new Date(order.createdAt).toLocaleTimeString()}</span>
+                            </div>
                           </div>
                           <Badge className={getStatusColor(order.status)}>
                             {order.status}
