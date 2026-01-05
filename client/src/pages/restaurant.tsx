@@ -220,7 +220,7 @@ export default function RestaurantPage() {
                 <Button size="lg" className="gap-2 shadow-lg">
                   <ShoppingBag className="w-5 h-5" />
                   <span>Order ({cart.length})</span>
-                  <span>${(total / 100).toFixed(2)}</span>
+                  <span>GH₵{(total / 100).toFixed(2)}</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-md">
