@@ -95,6 +95,24 @@ export function useRestaurant() {
     },
   });
 
+  const updateMenuItemMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<InsertMenuItem> }) => {
+      const url = buildUrl(api.menu.update.path, { id });
+      const res = await fetch(url, {
+        method: api.menu.update.method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to update menu item");
+      return api.menu.update.responses[200].parse(await res.json());
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.menu.list.path] });
+      toast({ title: "Menu Item Updated", description: "Changes have been saved." });
+    },
+  });
+
   return {
     menu: menuQuery.data ?? [],
     orders: ordersQuery.data ?? [],
@@ -104,5 +122,6 @@ export function useRestaurant() {
     createOrder: createOrderMutation,
     updateOrderStatus: updateOrderStatusMutation,
     deleteMenuItem: deleteMenuItemMutation,
+    updateMenuItem: updateMenuItemMutation,
   };
 }

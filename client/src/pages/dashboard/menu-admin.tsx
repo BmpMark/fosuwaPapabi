@@ -14,7 +14,7 @@ import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Edit2 } from "lucide-react";
 
 const menuItemSchema = z.object({
   name: z.string().min(1, "Item name is required"),
@@ -32,8 +32,9 @@ type MenuItemFormData = z.infer<typeof menuItemSchema>;
 export default function MenuAdminPage() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
-  const { menu, createMenuItem, deleteMenuItem } = useRestaurant();
+  const { menu, createMenuItem, deleteMenuItem, updateMenuItem } = useRestaurant();
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
 
   if (!user || (user.role !== "admin" && user.role !== "staff" && user.role !== "manager")) {
     setLocation("/dashboard");
@@ -46,9 +47,29 @@ export default function MenuAdminPage() {
   });
 
   const onSubmit = async (data: MenuItemFormData) => {
-    await createMenuItem.mutateAsync(data);
+    if (editingItem) {
+      await updateMenuItem.mutateAsync({ id: editingItem.id, data });
+    } else {
+      await createMenuItem.mutateAsync(data);
+    }
     form.reset();
     setIsFormOpen(false);
+    setEditingItem(null);
+  };
+
+  const handleEdit = (item: any) => {
+    setEditingItem(item);
+    form.reset({
+      name: item.name,
+      description: item.description,
+      price: item.price,
+      category: item.category as any,
+      available: item.available,
+      stockLevel: item.stockLevel,
+      lowStockThreshold: item.lowStockThreshold,
+      image: item.image || "",
+    });
+    setIsFormOpen(true);
   };
 
   const categories = [
@@ -76,7 +97,7 @@ export default function MenuAdminPage() {
           {isFormOpen && (
             <Card>
               <CardHeader>
-                <CardTitle>Add Menu Item</CardTitle>
+                <CardTitle>{editingItem ? "Edit Menu Item" : "Add Menu Item"}</CardTitle>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -156,10 +177,10 @@ export default function MenuAdminPage() {
                         )} />
                       </div>
                     <div className="flex gap-4">
-                      <Button type="submit" disabled={createMenuItem.isPending}>
-                        Add Item
+                      <Button type="submit" disabled={createMenuItem.isPending || updateMenuItem.isPending}>
+                        {editingItem ? "Save Changes" : "Add Item"}
                       </Button>
-                      <Button type="button" variant="outline" onClick={() => { setIsFormOpen(false); form.reset(); }}>
+                      <Button type="button" variant="outline" onClick={() => { setIsFormOpen(false); form.reset(); setEditingItem(null); }}>
                         Cancel
                       </Button>
                     </div>
@@ -202,15 +223,25 @@ export default function MenuAdminPage() {
                             </span>
                           )}
                         </div>
-                        <Button 
-                          size="icon" 
-                          variant="destructive"
-                          onClick={() => deleteMenuItem.mutate(item.id)}
-                          disabled={deleteMenuItem.isPending}
-                          data-testid={`button-delete-menu-${item.id}`}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button 
+                            size="icon" 
+                            variant="outline"
+                            onClick={() => handleEdit(item)}
+                            data-testid={`button-edit-menu-${item.id}`}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            size="icon" 
+                            variant="destructive"
+                            onClick={() => deleteMenuItem.mutate(item.id)}
+                            disabled={deleteMenuItem.isPending}
+                            data-testid={`button-delete-menu-${item.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                       <p className="text-muted-foreground">{item.description}</p>
                       <p className="text-sm font-semibold">GH₵{(item.price / 100).toFixed(2)}</p>

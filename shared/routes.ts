@@ -148,6 +148,15 @@ export const api = {
         404: errorSchemas.notFound,
       },
     },
+    update: {
+      method: 'PUT' as const,
+      path: '/api/menu/:id',
+      input: insertMenuItemSchema.partial(),
+      responses: {
+        200: z.custom<typeof menuItems.$inferSelect>(),
+        404: errorSchemas.notFound,
+      },
+    },
   },
   orders: {
     list: {

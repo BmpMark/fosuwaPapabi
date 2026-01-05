@@ -94,6 +94,13 @@ export async function registerRoutes(
     res.json({ message: "Menu item deleted successfully" });
   });
 
+  app.put(api.menu.update.path, async (req, res) => {
+    const input = api.menu.update.input.parse(req.body);
+    const item = await storage.updateMenuItem(Number(req.params.id), input);
+    if (!item) return res.status(404).json({ message: "Menu item not found" });
+    res.json(item);
+  });
+
   // Orders
   app.get(api.orders.list.path, async (req, res) => {
     const orders = await storage.getOrders();
