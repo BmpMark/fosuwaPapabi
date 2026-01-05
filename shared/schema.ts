@@ -67,7 +67,7 @@ export const orders = pgTable("orders", {
   paymentMethod: text("payment_method").notNull().default("cash"), // cash, room_folio
   status: text("status").notNull().default("pending"), // pending, preparing, delivered, completed, billed
   totalAmount: integer("total_amount").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const insertOrderSchema = createInsertSchema(orders).omit({ id: true, createdAt: true });
