@@ -114,7 +114,7 @@ export default function KitchenOrdersPage() {
                       <div className="space-y-4">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="text-sm text-muted-foreground">Order #{order.id}</p>
+                            <p className="text-sm font-semibold text-foreground">Order #{order.id}</p>
                             <p className="text-sm text-muted-foreground">Type: {order.type.replace('_', ' ')}</p>
                             <OrderTimer createdAt={order.createdAt} />
                           </div>
@@ -177,7 +177,7 @@ export default function KitchenOrdersPage() {
                       <div className="space-y-4">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="text-sm text-muted-foreground">Order #{order.id}</p>
+                            <p className="text-sm font-semibold text-foreground">Order #{order.id}</p>
                             <p className="text-sm text-muted-foreground">Type: {order.type.replace('_', ' ')}</p>
                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                               <Clock className="h-3 w-3" />
