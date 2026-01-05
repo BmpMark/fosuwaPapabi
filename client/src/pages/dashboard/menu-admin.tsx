@@ -191,6 +191,16 @@ export default function MenuAdminPage() {
                           <span className={`px-3 py-1 rounded-full text-sm font-medium ${item.available ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" : "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200"}`}>
                             {item.available ? "Available" : "Unavailable"}
                           </span>
+                          {item.stockLevel <= item.lowStockThreshold && (
+                            <span className="px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-full text-sm font-medium flex items-center gap-1">
+                              Low Stock: {item.stockLevel}
+                            </span>
+                          )}
+                          {item.stockLevel > item.lowStockThreshold && (
+                            <span className="px-3 py-1 bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200 rounded-full text-sm font-medium">
+                              Stock: {item.stockLevel}
+                            </span>
+                          )}
                         </div>
                         <Button 
                           size="icon" 
