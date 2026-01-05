@@ -22,6 +22,8 @@ const menuItemSchema = z.object({
   price: z.coerce.number().min(0, "Price must be positive"),
   category: z.enum(["starter", "main", "dessert", "drink"]),
   available: z.boolean().default(true),
+  stockLevel: z.coerce.number().min(0, "Stock level must be at least 0"),
+  lowStockThreshold: z.coerce.number().min(0, "Threshold must be at least 0"),
   image: z.string().url("Image must be a valid URL").optional().or(z.literal("")),
 });
 
@@ -40,7 +42,7 @@ export default function MenuAdminPage() {
 
   const form = useForm<MenuItemFormData>({
     resolver: zodResolver(menuItemSchema),
-    defaultValues: { available: true, category: "main" },
+    defaultValues: { available: true, category: "main", stockLevel: 20, lowStockThreshold: 5 },
   });
 
   const onSubmit = async (data: MenuItemFormData) => {
@@ -130,13 +132,29 @@ export default function MenuAdminPage() {
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={form.control} name="image" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Image URL</FormLabel>
-                        <FormControl><Input placeholder="https://example.com/image.jpg" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
+                      <FormField control={form.control} name="image" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Image URL</FormLabel>
+                          <FormControl><Input placeholder="https://example.com/image.jpg" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField control={form.control} name="stockLevel" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Current Stock</FormLabel>
+                            <FormControl><Input type="number" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="lowStockThreshold" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Low Stock Alert Level</FormLabel>
+                            <FormControl><Input type="number" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
                     <div className="flex gap-4">
                       <Button type="submit" disabled={createMenuItem.isPending}>
                         Add Item

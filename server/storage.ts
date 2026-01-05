@@ -147,15 +147,20 @@ export class DatabaseStorage implements IStorage {
     const [newOrder] = await db.insert(orders).values(order).returning();
     
     for (const item of items) {
-       const [menuItem] = await db.select().from(menuItems).where(eq(menuItems.id, item.menuItemId));
-       if (menuItem) {
-         await db.insert(orderItems).values({
-            orderId: newOrder.id,
-            menuItemId: item.menuItemId,
-            quantity: item.quantity,
-            priceAtTime: menuItem.price
-         });
-       }
+      const [menuItem] = await db.select().from(menuItems).where(eq(menuItems.id, item.menuItemId));
+      if (menuItem) {
+        // Decrease stock level
+        await db.update(menuItems)
+          .set({ stockLevel: Math.max(0, menuItem.stockLevel - item.quantity) })
+          .where(eq(menuItems.id, menuItem.id));
+
+        await db.insert(orderItems).values({
+          orderId: newOrder.id,
+          menuItemId: item.menuItemId,
+          quantity: item.quantity,
+          priceAtTime: menuItem.price
+        });
+      }
     }
     return newOrder;
   }
