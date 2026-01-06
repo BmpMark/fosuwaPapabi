@@ -14,7 +14,7 @@ import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Edit2 } from "lucide-react";
 
 const roomSchema = z.object({
   number: z.string().min(1, "Room number is required"),
@@ -30,8 +30,9 @@ type RoomFormData = z.infer<typeof roomSchema>;
 export default function RoomsAdminPage() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
-  const { rooms, createRoom, deleteRoom } = useRooms();
+  const { rooms, createRoom, deleteRoom, updateRoom } = useRooms();
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingRoom, setEditingRoom] = useState<any>(null);
 
   if (!user || (user.role !== "admin" && user.role !== "staff" && user.role !== "manager")) {
     setLocation("/dashboard");
@@ -44,9 +45,27 @@ export default function RoomsAdminPage() {
   });
 
   const onSubmit = async (data: RoomFormData) => {
-    await createRoom.mutateAsync(data);
+    if (editingRoom) {
+      await updateRoom.mutateAsync({ id: editingRoom.id, data });
+    } else {
+      await createRoom.mutateAsync(data);
+    }
     form.reset();
     setIsFormOpen(false);
+    setEditingRoom(null);
+  };
+
+  const handleEdit = (room: any) => {
+    setEditingRoom(room);
+    form.reset({
+      number: room.number,
+      type: room.type,
+      price: room.price,
+      capacity: room.capacity,
+      description: room.description,
+      isAvailable: room.isAvailable,
+    });
+    setIsFormOpen(true);
   };
 
   const roomTypes = [
@@ -73,7 +92,7 @@ export default function RoomsAdminPage() {
           {isFormOpen && (
             <Card>
               <CardHeader>
-                <CardTitle>Add New Room</CardTitle>
+                <CardTitle>{editingRoom ? "Edit Room" : "Add New Room"}</CardTitle>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -137,10 +156,10 @@ export default function RoomsAdminPage() {
                       </FormItem>
                     )} />
                     <div className="flex gap-4">
-                      <Button type="submit" disabled={createRoom.isPending}>
-                        Add Room
+                      <Button type="submit" disabled={createRoom.isPending || (updateRoom as any).isPending}>
+                        {editingRoom ? "Save Changes" : "Add Room"}
                       </Button>
-                      <Button type="button" variant="outline" onClick={() => { setIsFormOpen(false); form.reset(); }}>
+                      <Button type="button" variant="outline" onClick={() => { setIsFormOpen(false); form.reset(); setEditingRoom(null); }}>
                         Cancel
                       </Button>
                     </div>
@@ -169,15 +188,25 @@ export default function RoomsAdminPage() {
                         <span><strong>Capacity:</strong> {room.capacity} {room.capacity === 1 ? "guest" : "guests"}</span>
                       </div>
                     </div>
-                    <Button 
-                      size="icon" 
-                      variant="destructive"
-                      onClick={() => deleteRoom.mutate(room.id)}
-                      disabled={deleteRoom.isPending}
-                      data-testid={`button-delete-room-${room.id}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        size="icon" 
+                        variant="outline"
+                        onClick={() => handleEdit(room)}
+                        data-testid={`button-edit-room-${room.id}`}
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        size="icon" 
+                        variant="destructive"
+                        onClick={() => deleteRoom.mutate(room.id)}
+                        disabled={deleteRoom.isPending}
+                        data-testid={`button-delete-room-${room.id}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

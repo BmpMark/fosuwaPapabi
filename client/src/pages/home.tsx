@@ -104,7 +104,7 @@ export default function HomePage() {
               <div className="absolute -inset-4 bg-accent/20 rounded-3xl transform -rotate-2" />
               {/* luxury hotel bedroom interior bed comfortable */}
               <img
-                src="https://lh3.googleusercontent.com/p/AF1QipPXhwD5yFw6onRrq2eGB2hbvL1gMRlaVP6NPnvw=s296-w296-h168-n-k-no-v1"
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQF-Y1yiNfi0BYBVgZxihlLUp_ASHmR35CvEQ&s"
                 alt="Luxury Suite"
                 className="relative rounded-2xl shadow-2xl w-full h-[500px] object-cover"
               />
