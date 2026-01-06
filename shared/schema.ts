@@ -21,7 +21,7 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export const rooms = pgTable("rooms", {
   id: serial("id").primaryKey(),
   number: text("number").notNull().unique(),
-  type: text("type").notNull(), // single, double, suite
+  type: text("type").notNull(), // executive, standard, apartment
   price: integer("price").notNull(), // in cents
   description: text("description").notNull(),
   capacity: integer("capacity").notNull(),
