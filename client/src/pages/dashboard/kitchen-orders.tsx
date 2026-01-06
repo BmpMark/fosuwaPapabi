@@ -16,7 +16,10 @@ function OrderTimer({ createdAt }: { createdAt: Date | string }) {
   useEffect(() => {
     const update = () => {
       const date = new Date(createdAt);
-      setElapsed(formatDistanceToNow(date, { addSuffix: true }));
+      // Ensure we treat the date string as UTC to avoid local timezone offsets
+      // and get the actual absolute time passed since the server created it.
+      const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+      setElapsed(formatDistanceToNow(utcDate, { addSuffix: true }));
     };
     update();
     const interval = setInterval(update, 60000);
@@ -24,9 +27,13 @@ function OrderTimer({ createdAt }: { createdAt: Date | string }) {
   }, [createdAt]);
 
   const getUrgencyColor = () => {
-    const minutes = (new Date().getTime() - new Date(createdAt).getTime()) / 60000;
-    if (minutes > 30) return "text-red-500 font-bold animate-pulse";
-    if (minutes > 15) return "text-orange-500 font-semibold";
+    const date = new Date(createdAt);
+    const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+    const minutes = (new Date().getTime() - utcDate.getTime()) / 60000;
+    // Check if minutes is negative (timezone issues) and clamp it
+    const clampedMinutes = Math.max(0, minutes);
+    if (clampedMinutes > 30) return "text-red-500 font-bold animate-pulse";
+    if (clampedMinutes > 15) return "text-orange-500 font-semibold";
     return "text-muted-foreground";
   };
 
