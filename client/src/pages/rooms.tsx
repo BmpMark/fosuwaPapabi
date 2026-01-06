@@ -46,6 +46,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 
 import roomImgPath from "@assets/fosuapapabiroom_1767732411656.jpg";
 import standardRoomImgPath from "@assets/standardroom_1767732987982.jpg";
+import executiveRoomImgPath from "@assets/executive_1767733236402.jpg";
 
 const bookingSchema = z.object({
   checkIn: z.string().min(1, "Check-in date required"),
@@ -111,7 +112,7 @@ function RoomCard({ room, user }: { room: any; user: any }) {
   // Hardcoded images for demo based on room type
   const getRoomImage = (type: string) => {
     if (type.toLowerCase().includes("standard")) return standardRoomImgPath;
-    if (type.toLowerCase().includes("executive")) return roomImgPath;
+    if (type.toLowerCase().includes("executive")) return executiveRoomImgPath;
     return roomImgPath; // default to the first one for apartment or others
   };
 
