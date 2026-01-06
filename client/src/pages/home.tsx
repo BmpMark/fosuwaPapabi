@@ -22,7 +22,7 @@ export default function HomePage() {
           </h1>
           <p className="text-lg md:text-xl text-white/90 max-w-2xl mb-10 leading-relaxed font-light drop-shadow-md">
             Experience an unforgettable stay at Fosua Papabi, where modern
-            elegance meets timeless comfort in the town.
+            elegance meets timeless comfort.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link href="/rooms">
@@ -64,12 +64,12 @@ export default function HomePage() {
               {
                 icon: Star,
                 title: "5-Star Service",
-                desc: "24/7 concierge and room service at your fingertips.",
+                desc: "Concierge and room service at your fingertips.",
               },
               {
                 icon: Coffee,
                 title: "Exquisite Dining",
-                desc: "Award-winning restaurant featuring local ingredients.",
+                desc: "Elegant restaurant featuring local and continental food.",
               },
               {
                 icon: Wifi,
@@ -121,9 +121,9 @@ export default function HomePage() {
               <ul className="space-y-3">
                 {[
                   "King Size Bed",
-                  "City View",
-                  "Private Balcony",
-                  "Jacuzzi",
+                  "Private Suite",
+                  "Exclusive Kitchen",
+                  "Self-Contain",
                 ].map((item) => (
                   <li
                     key={item}

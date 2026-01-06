@@ -220,7 +220,6 @@ export function Footer() {
           <ul className="space-y-2 text-primary-foreground/70">
             <li>Kwafokrom, Nsawam-Kumasi road</li>
             <li>+233 54 845 7017</li>
-            <li>stay@fosuwapapabi.com</li>
           </ul>
         </div>
         <div>
@@ -257,7 +256,7 @@ export function Footer() {
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-4 mt-16 pt-8 border-t border-primary-foreground/10 text-center text-primary-foreground/50 text-sm">
-        © 2025 Fosuwa Papabi Hotel. All rights reserved.
+        © 2026 Fosuwa Papabi Hotel. All rights reserved.
       </div>
     </footer>
   );

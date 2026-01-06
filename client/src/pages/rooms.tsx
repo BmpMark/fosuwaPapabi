@@ -44,6 +44,8 @@ import { Input } from "@/components/ui/input";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 
+import roomImgPath from "@assets/fosuapapabiroom_1767732411656.jpg";
+
 const bookingSchema = z.object({
   checkIn: z.string().min(1, "Check-in date required"),
   checkOut: z.string().min(1, "Check-out date required"),
@@ -107,11 +109,7 @@ function RoomCard({ room, user }: { room: any; user: any }) {
 
   // Hardcoded images for demo based on room type
   const getRoomImage = (type: string) => {
-    if (type.toLowerCase().includes("suite"))
-      return "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800&auto=format&fit=crop";
-    if (type.toLowerCase().includes("double"))
-      return "https://images.unsplash.com/photo-1595576560481-efe28e085d63?w=800&auto=format&fit=crop";
-    return "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&auto=format&fit=crop";
+    return roomImgPath;
   };
 
   const form = useForm<z.infer<typeof bookingSchema>>({
