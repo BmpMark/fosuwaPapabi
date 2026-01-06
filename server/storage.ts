@@ -150,7 +150,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createOrder(order: typeof orders.$inferInsert, items: { menuItemId: number; quantity: number }[]): Promise<Order> {
-    const [newOrder] = await db.insert(orders).values(order).returning();
+    const [newOrder] = await db.insert(orders).values({
+      ...order,
+      createdAt: new Date(),
+    }).returning();
     
     for (const item of items) {
       const [menuItem] = await db.select().from(menuItems).where(eq(menuItems.id, item.menuItemId));

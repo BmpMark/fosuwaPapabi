@@ -155,10 +155,10 @@ export default function KitchenOrdersPage() {
                           )}
                         </div>
 
-                        <div className="pt-2 border-t text-sm">
-                          <p className="text-muted-foreground font-medium">Payment: {order.paymentMethod.replace('_', ' ')}</p>
-                          <p className="text-muted-foreground">Total: GH₵{(order.totalAmount / 100).toFixed(2)}</p>
-                        </div>
+                      <div className="pt-2 border-t text-sm">
+                        <p className="text-muted-foreground font-medium">Payment: {order.paymentMethod.replace('_', ' ')}</p>
+                        <p className="text-muted-foreground">Total: GH₵{Number(order.totalAmount).toFixed(2)}</p>
+                      </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -190,7 +190,7 @@ export default function KitchenOrdersPage() {
                         </div>
                         
                         <div className="pt-2 border-t text-sm">
-                          <p className="text-muted-foreground">Total: GH₵{(order.totalAmount / 100).toFixed(2)}</p>
+                          <p className="text-muted-foreground">Total: GH₵{Number(order.totalAmount).toFixed(2)}</p>
                         </div>
                       </div>
                     </CardContent>
