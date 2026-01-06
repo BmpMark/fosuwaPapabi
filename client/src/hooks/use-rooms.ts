@@ -34,7 +34,7 @@ export function useRooms() {
   });
 
   const updateRoomMutation = useMutation({
-    mutationFn: async ({ id, ...data }: Partial<InsertRoom> & { id: number }) => {
+    mutationFn: async ({ id, data }: { id: number; data: Partial<InsertRoom> }) => {
       const url = buildUrl(api.rooms.update.path, { id });
       const res = await fetch(url, {
         method: api.rooms.update.method,
