@@ -22,7 +22,7 @@ export const rooms = pgTable("rooms", {
   id: serial("id").primaryKey(),
   number: text("number").notNull().unique(),
   type: text("type").notNull(), // executive, standard, apartment
-  price: integer("price").notNull(), // in cents
+  price: integer("price").notNull(), // in cedis
   description: text("description").notNull(),
   capacity: integer("capacity").notNull(),
   isAvailable: boolean("is_available").notNull().default(true),
@@ -48,7 +48,7 @@ export const menuItems = pgTable("menu_items", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description").notNull(),
-  price: integer("price").notNull(), // in cents
+  price: integer("price").notNull(), // in cedis
   category: text("category").notNull(), // starter, main, dessert, drink
   available: boolean("available").notNull().default(true),
   image: text("image"), // image URL

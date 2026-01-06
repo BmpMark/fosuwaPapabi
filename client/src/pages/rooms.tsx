@@ -153,7 +153,7 @@ function RoomCard({ room, user }: { room: any; user: any }) {
         />
         <div className="absolute top-4 right-4">
           <Badge className="bg-white/90 text-primary hover:bg-white backdrop-blur-sm text-sm py-1 px-3 shadow-sm">
-            GH₵{(room.price / 100).toFixed(0)} / night
+            GH₵{room.price.toFixed(2)} / night
           </Badge>
         </div>
       </div>

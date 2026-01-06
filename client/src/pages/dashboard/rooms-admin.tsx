@@ -176,11 +176,11 @@ export default function RoomsAdminPage() {
                         name="price"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Price (cents)</FormLabel>
+                            <FormLabel>Price (GH₵)</FormLabel>
                             <FormControl>
                               <Input
                                 type="number"
-                                placeholder="15000"
+                                placeholder="150"
                                 {...field}
                               />
                             </FormControl>
@@ -287,7 +287,7 @@ export default function RoomsAdminPage() {
                       <div className="flex gap-6 text-sm">
                         <span>
                           <strong>Price:</strong> GH₵
-                          {(room.price / 100).toFixed(2)}
+                          {room.price.toFixed(2)}
                         </span>
                         <span>
                           <strong>Capacity:</strong> {room.capacity}{" "}

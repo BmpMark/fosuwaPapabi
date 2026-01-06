@@ -130,8 +130,8 @@ export default function MenuAdminPage() {
                       )} />
                       <FormField control={form.control} name="price" render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Price (cents)</FormLabel>
-                          <FormControl><Input type="number" placeholder="2500" {...field} /></FormControl>
+                          <FormLabel>Price (GH₵)</FormLabel>
+                          <FormControl><Input type="number" placeholder="25" {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
@@ -244,7 +244,7 @@ export default function MenuAdminPage() {
                         </div>
                       </div>
                       <p className="text-muted-foreground">{item.description}</p>
-                      <p className="text-sm font-semibold">GH₵{(item.price / 100).toFixed(2)}</p>
+                      <p className="text-sm font-semibold">GH₵{item.price.toFixed(2)}</p>
                     </div>
                   </div>
                 </CardContent>
