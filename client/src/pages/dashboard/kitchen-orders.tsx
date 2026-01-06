@@ -15,11 +15,16 @@ function OrderTimer({ createdAt }: { createdAt: Date | string }) {
 
   useEffect(() => {
     const update = () => {
-      const date = new Date(createdAt);
-      // Ensure we treat the date string as UTC to avoid local timezone offsets
-      // and get the actual absolute time passed since the server created it.
-      const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-      setElapsed(formatDistanceToNow(utcDate, { addSuffix: true }));
+      try {
+        const date = new Date(createdAt);
+        if (isNaN(date.getTime())) {
+          setElapsed("unknown time");
+          return;
+        }
+        setElapsed(formatDistanceToNow(date, { addSuffix: true }));
+      } catch (err) {
+        setElapsed("unknown time");
+      }
     };
     update();
     const interval = setInterval(update, 60000);
@@ -27,14 +32,17 @@ function OrderTimer({ createdAt }: { createdAt: Date | string }) {
   }, [createdAt]);
 
   const getUrgencyColor = () => {
-    const date = new Date(createdAt);
-    const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-    const minutes = (new Date().getTime() - utcDate.getTime()) / 60000;
-    // Check if minutes is negative (timezone issues) and clamp it
-    const clampedMinutes = Math.max(0, minutes);
-    if (clampedMinutes > 30) return "text-red-500 font-bold animate-pulse";
-    if (clampedMinutes > 15) return "text-orange-500 font-semibold";
-    return "text-muted-foreground";
+    try {
+      const date = new Date(createdAt);
+      if (isNaN(date.getTime())) return "text-muted-foreground";
+      const minutes = (new Date().getTime() - date.getTime()) / 60000;
+      const clampedMinutes = Math.max(0, minutes);
+      if (clampedMinutes > 30) return "text-red-500 font-bold animate-pulse";
+      if (clampedMinutes > 15) return "text-orange-500 font-semibold";
+      return "text-muted-foreground";
+    } catch (err) {
+      return "text-muted-foreground";
+    }
   };
 
   return (
