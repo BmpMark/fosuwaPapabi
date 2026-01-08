@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { insertUserSchema } from "@shared/schema";
 import { Link } from "wouter";
 import { ArrowLeft } from "lucide-react";
+import authBgImg from "@assets/fosuapapabipool_1767870510244.jpg";
 import { useEffect } from "react";
 
 const loginSchema = z.object({
@@ -50,11 +51,11 @@ export default function AuthPage() {
       {/* Visual Side */}
       <div className="hidden lg:block relative bg-primary text-primary-foreground overflow-hidden">
         <img 
-          src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070&auto=format&fit=crop"
-          alt="Hotel ambiance"
-          className="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-overlay"
+          src={authBgImg}
+          alt="Welcome to Fosua Papabi"
+          className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay"
         />
-        <div className="absolute inset-0 flex flex-col justify-center px-16">
+        <div className="absolute inset-0 flex flex-col justify-center px-16 bg-black/30">
           <h1 className="font-display text-6xl font-bold mb-6">Welcome to Fosua Papabi</h1>
           <p className="text-xl max-w-md font-light leading-relaxed">
             Sign in to manage your reservations, order room service, and experience luxury like never before.

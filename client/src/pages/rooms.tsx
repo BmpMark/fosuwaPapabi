@@ -85,16 +85,24 @@ export default function RoomsPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {rooms.map((room) => (
-            <RoomCard key={room.id} room={room} user={user} />
-          ))}
+          {rooms.map((room) => {
+            const isManagerRoom = room.number === "6";
+            return (
+              <RoomCard 
+                key={room.id} 
+                room={room} 
+                user={user} 
+                isManagerRoom={isManagerRoom} 
+              />
+            );
+          })}
         </div>
       </div>
     </Layout>
   );
 }
 
-function RoomCard({ room, user }: { room: any; user: any }) {
+function RoomCard({ room, user, isManagerRoom }: { room: any; user: any; isManagerRoom?: boolean }) {
   const { createReservation, reservations } = useReservations();
   const [isOpen, setIsOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -211,7 +219,11 @@ function RoomCard({ room, user }: { room: any; user: any }) {
           </DialogContent>
         </Dialog>
 
-        {user ? (
+        {isManagerRoom ? (
+          <Button variant="outline" className="w-full cursor-not-allowed opacity-70" disabled>
+            Management Only
+          </Button>
+        ) : user ? (
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
               <Button className="w-full group-hover:bg-primary/90">
