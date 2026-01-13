@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { api } from "@shared/routes";
 import { z } from "zod";
+import { sendBookingNotification, sendOrderNotification } from "./email";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -60,6 +61,20 @@ export async function registerRoutes(
     try {
       const input = api.reservations.create.input.parse(req.body);
       const reservation = await storage.createReservation(input);
+      
+      // Send notification
+      const user = await storage.getUser(reservation.userId);
+      const room = await storage.getRoom(reservation.roomId);
+      if (user && room) {
+        sendBookingNotification({
+          guestName: user.name,
+          roomNumber: room.number,
+          checkIn: reservation.checkIn,
+          checkOut: reservation.checkOut,
+          totalPrice: reservation.totalPrice,
+        });
+      }
+
       res.status(201).json(reservation);
     } catch (err) {
        if (err instanceof z.ZodError) {
@@ -111,6 +126,28 @@ export async function registerRoutes(
     const { order, items } = req.body;
     // Basic validation manual for nested structure
     const newOrder = await storage.createOrder(order, items);
+    
+    // Send notification
+    try {
+      const menuItems = await storage.getMenuItems();
+      const orderItems = items.map((item: any) => {
+        const menuItem = menuItems.find(mi => mi.id === item.menuItemId);
+        return {
+          name: menuItem?.name || "Unknown Item",
+          quantity: item.quantity
+        };
+      });
+      
+      sendOrderNotification({
+        orderId: newOrder.id,
+        type: newOrder.type,
+        totalAmount: newOrder.totalAmount,
+        items: orderItems,
+      });
+    } catch (error) {
+      console.error("Failed to trigger order notification:", error);
+    }
+
     res.status(201).json(newOrder);
   });
 
