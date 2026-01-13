@@ -120,6 +120,26 @@ export async function registerRoutes(
     res.json(order);
   });
 
+  // Chat
+  app.get(api.chat.list.path, async (req, res) => {
+    const messages = await storage.getMessages();
+    res.json(messages);
+  });
+
+  app.post(api.chat.send.path, async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    try {
+      const message = await storage.createMessage({
+        senderId: req.user!.id,
+        content: req.body.content,
+        isAdmin: req.user!.role !== "guest",
+      });
+      res.status(201).json(message);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
   // Seed data function (simple check)
   async function seed() {
     // Create admin account if none exist

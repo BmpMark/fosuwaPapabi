@@ -84,21 +84,21 @@ export const orderItems = pgTable("order_items", {
 export const insertOrderItemSchema = createInsertSchema(orderItems).omit({ id: true });
 
 
+// Messages for Chat
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  senderId: integer("sender_id").notNull(),
+  receiverId: integer("receiver_id"), // Null for broadcast or specific roles
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  isAdmin: boolean("is_admin").notNull().default(false),
+});
+
+export const insertMessageSchema = createInsertSchema(messages).omit({ id: true, createdAt: true });
+
 // Relations
-export const reservationsRelations = relations(reservations, ({ one }) => ({
-  user: one(users, { fields: [reservations.userId], references: [users.id] }),
-  room: one(rooms, { fields: [reservations.roomId], references: [rooms.id] }),
-}));
-
-export const ordersRelations = relations(orders, ({ one, many }) => ({
-  user: one(users, { fields: [orders.userId], references: [users.id] }),
-  room: one(rooms, { fields: [orders.roomId], references: [rooms.id] }),
-  items: many(orderItems),
-}));
-
-export const orderItemsRelations = relations(orderItems, ({ one }) => ({
-  order: one(orders, { fields: [orderItems.orderId], references: [orders.id] }),
-  menuItem: one(menuItems, { fields: [orderItems.menuItemId], references: [menuItems.id] }),
+export const messagesRelations = relations(messages, ({ one }) => ({
+  sender: one(users, { fields: [messages.senderId], references: [users.id] }),
 }));
 
 // Export types
@@ -110,3 +110,4 @@ export type InsertMenuItem = typeof menuItems.$inferInsert;
 export type Order = typeof orders.$inferSelect;
 export type InsertOrder = typeof orders.$inferInsert;
 export type OrderItem = typeof orderItems.$inferSelect;
+export type Message = typeof messages.$inferSelect;

@@ -188,6 +188,24 @@ export const api = {
       },
     },
   },
+  chat: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/chat',
+      responses: {
+        200: z.array(z.custom<typeof messages.$inferSelect>()),
+      },
+    },
+    send: {
+      method: 'POST' as const,
+      path: '/api/chat',
+      input: z.object({ content: z.string() }),
+      responses: {
+        201: z.custom<typeof messages.$inferSelect>(),
+        401: errorSchemas.unauthorized,
+      },
+    },
+  },
 };
 
 export function buildUrl(path: string, params?: Record<string, string | number>): string {

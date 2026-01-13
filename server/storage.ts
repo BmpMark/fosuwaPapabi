@@ -1,4 +1,4 @@
-import { users, rooms, reservations, menuItems, orders, orderItems, type User, type InsertUser, type Room, type Reservation, type MenuItem, type Order, type OrderItem } from "@shared/schema";
+import { users, rooms, reservations, menuItems, orders, orderItems, messages, type User, type InsertUser, type Room, type Reservation, type MenuItem, type Order, type OrderItem, type Message } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import session from "express-session";
@@ -30,6 +30,9 @@ export interface IStorage {
   getOrders(): Promise<Order[]>;
   createOrder(order: typeof orders.$inferInsert, items: { menuItemId: number; quantity: number }[]): Promise<Order>;
   updateOrderStatus(id: number, status: string): Promise<Order | undefined>;
+
+  getMessages(): Promise<Message[]>;
+  createMessage(message: typeof messages.$inferInsert): Promise<Message>;
 
   sessionStore: session.Store;
 }
@@ -174,6 +177,15 @@ export class DatabaseStorage implements IStorage {
   async updateOrderStatus(id: number, status: string): Promise<Order | undefined> {
     const [updated] = await db.update(orders).set({ status }).where(eq(orders.id, id)).returning();
     return updated;
+  }
+
+  async getMessages(): Promise<Message[]> {
+    return await db.select().from(messages);
+  }
+
+  async createMessage(message: typeof messages.$inferInsert): Promise<Message> {
+    const [newMessage] = await db.insert(messages).values(message).returning();
+    return newMessage;
   }
 }
 
