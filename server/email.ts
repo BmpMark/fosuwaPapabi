@@ -14,9 +14,10 @@ export async function sendBookingNotification(details: {
     return;
   }
   try {
-    await resend.emails.send({
+    console.log(`Attempting to send booking email for Room ${details.roomNumber}`);
+    const { data, error } = await resend.emails.send({
       from: 'Fosua Papabi <onboarding@resend.dev>',
-      to: ['delivered@resend.dev'], // In a real app, this would be the manager's email
+      to: ['kendricklamarkd@gmail.com'], 
       subject: `New Room Booking: Room ${details.roomNumber}`,
       html: `
         <h1>New Room Booking</h1>
@@ -27,6 +28,12 @@ export async function sendBookingNotification(details: {
         <p><strong>Total Price:</strong> GH₵${details.totalPrice}</p>
       `,
     });
+
+    if (error) {
+      console.error('Resend API Error (Booking):', error);
+    } else {
+      console.log('Booking email sent successfully:', data);
+    }
   } catch (error) {
     console.error('Failed to send booking email:', error);
   }
@@ -47,9 +54,10 @@ export async function sendOrderNotification(details: {
       .map((item) => `<li>${item.name} x ${item.quantity}</li>`)
       .join('');
 
-    await resend.emails.send({
+    console.log(`Attempting to send order email for #${details.orderId}`);
+    const { data, error } = await resend.emails.send({
       from: 'Fosua Papabi <onboarding@resend.dev>',
-      to: ['delivered@resend.dev'], // In a real app, this would be the kitchen/manager email
+      to: ['kendricklamarkd@gmail.com'], 
       subject: `New Restaurant Order #${details.orderId}`,
       html: `
         <h1>New Restaurant Order</h1>
@@ -60,6 +68,12 @@ export async function sendOrderNotification(details: {
         <ul>${itemsHtml}</ul>
       `,
     });
+
+    if (error) {
+      console.error('Resend API Error:', error);
+    } else {
+      console.log('Email sent successfully:', data);
+    }
   } catch (error) {
     console.error('Failed to send order email:', error);
   }
