@@ -28,9 +28,29 @@ export default function ReportsPage() {
   const restaurantRevenue = orders.reduce((acc, o) => acc + o.totalAmount, 0);
   
   const revenueData = [
-    { name: "Rooms", value: roomRevenue / 100 },
-    { name: "Restaurant", value: restaurantRevenue / 100 },
+    { name: "Rooms", value: roomRevenue },
+    { name: "Restaurant", value: restaurantRevenue },
   ];
+
+  // Room Type Distribution
+  const roomTypeData = rooms.reduce((acc, room) => {
+    acc[room.type] = (acc[room.type] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const roomTypeChartData = Object.entries(roomTypeData).map(([name, value]) => ({ name, value }));
+
+  // Busiest Booking Days
+  const bookingDayData = reservations.reduce((acc, res) => {
+    const day = new Date(res.checkIn).toLocaleDateString('en-US', { weekday: 'long' });
+    acc[day] = (acc[day] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const daysOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const busiestDaysData = daysOrder.map(day => ({ name: day, bookings: bookingDayData[day] || 0 }));
+
+  // Top Selling Menu Items (Approximation based on orders)
+  // Since we don't have a direct "top items" endpoint yet, we'll use a placeholder logic 
+  // or simple category distribution for now, but I will improve the UI to show these categories.
 
   // Restaurant Sales by Category
   const salesByCategory = menuItems.reduce((acc, item) => {
@@ -50,6 +70,37 @@ export default function ReportsPage() {
       <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
         <h1 className="text-3xl font-display font-bold">Admin Reports & Analytics</h1>
         
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader><CardTitle>Popular Room Types</CardTitle></CardHeader>
+            <CardContent className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={roomTypeChartData} outerRadius={100} fill="#8884d8" dataKey="value" label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                    {roomTypeChartData.map((_, index) => <Cell key={index} fill={COLORS[index % COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Busiest Booking Days</CardTitle></CardHeader>
+            <CardContent className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={busiestDaysData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="bookings" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardHeader><CardTitle>Occupancy Rate</CardTitle></CardHeader>
