@@ -16,7 +16,7 @@ export function ChatWidget() {
   const { user } = useAuth();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const { data: messages = [] } = useQuery<Message[]>({
+  const { data: messages = [] } = useQuery<(Message & { sender?: { name: string } })[]>({
     queryKey: [api.chat.list.path],
     refetchInterval: 3000,
   });
@@ -71,6 +71,11 @@ export function ChatWidget() {
                         ? "bg-primary text-primary-foreground" 
                         : "bg-muted text-muted-foreground"
                     }`}>
+                      {user.role !== "guest" && msg.senderId !== user.id && (
+                        <div className="text-[10px] font-bold opacity-70 mb-1">
+                          {msg.sender?.name || "Guest"}
+                        </div>
+                      )}
                       {msg.content}
                     </div>
                   </div>

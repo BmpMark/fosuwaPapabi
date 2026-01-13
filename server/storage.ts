@@ -179,8 +179,17 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
-  async getMessages(): Promise<Message[]> {
-    return await db.select().from(messages);
+  async getMessages(): Promise<(Message & { sender?: { name: string } })[]> {
+    const allMessages = await db.select().from(messages);
+    return await Promise.all(
+      allMessages.map(async (msg) => {
+        const user = await this.getUser(msg.senderId);
+        return {
+          ...msg,
+          sender: user ? { name: user.name } : undefined,
+        };
+      })
+    );
   }
 
   async createMessage(message: typeof messages.$inferInsert): Promise<Message> {
