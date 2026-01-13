@@ -128,11 +128,12 @@ export async function registerRoutes(
 
   app.post(api.chat.send.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
     try {
       const message = await storage.createMessage({
-        senderId: req.user!.id,
+        senderId: user.id,
         content: req.body.content,
-        isAdmin: req.user!.role !== "guest",
+        isAdmin: user.role !== "guest",
       });
       res.status(201).json(message);
     } catch (err) {
