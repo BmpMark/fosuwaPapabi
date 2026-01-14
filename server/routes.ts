@@ -194,15 +194,18 @@ export async function registerRoutes(
     
     const rooms = await storage.getRooms();
     if (rooms.length === 0) {
-        await storage.createRoom({ number: "101", type: "single", price: 10000, description: "Cozy single room", capacity: 1, isAvailable: true });
-        await storage.createRoom({ number: "201", type: "double", price: 18000, description: "Spacious double room with view", capacity: 2, isAvailable: true });
-        await storage.createRoom({ number: "301", type: "suite", price: 35000, description: "Luxury suite", capacity: 4, isAvailable: true });
+        await storage.createRoom({ number: "101", type: "standard", price: 100, description: "Cozy standard room", capacity: 2, isAvailable: true });
+        await storage.createRoom({ number: "102", type: "standard", price: 100, description: "Clean and comfortable standard room", capacity: 2, isAvailable: true });
+        await storage.createRoom({ number: "201", type: "executive", price: 250, description: "Spacious executive room with premium amenities", capacity: 2, isAvailable: true });
+        await storage.createRoom({ number: "202", type: "executive", price: 250, description: "Luxury executive suite", capacity: 2, isAvailable: true });
+        await storage.createRoom({ number: "301", type: "apartment", price: 450, description: "Large apartment with kitchenette", capacity: 4, isAvailable: true });
+        await storage.createRoom({ number: "302", type: "apartment", price: 450, description: "Family apartment suite", capacity: 4, isAvailable: true });
     }
     const menu = await storage.getMenuItems();
     if (menu.length === 0) {
-        await storage.createMenuItem({ name: "Bruschetta", description: "Toasted bread with tomatoes", price: 800, category: "starter", available: true });
-        await storage.createMenuItem({ name: "Steak Frites", description: "Grilled steak with fries", price: 2500, category: "main", available: true });
-        await storage.createMenuItem({ name: "Tiramisu", description: "Classic coffee dessert", price: 900, category: "dessert", available: true });
+        await storage.createMenuItem({ name: "Fried Rice with Fried/Grilled Chicken", description: "Delicious fried rice served with your choice of fried or grilled chicken", price: 85, category: "main", available: true });
+        await storage.createMenuItem({ name: "Jollof Rice with Fried/Grilled Chicken", description: "Ghanaian Jollof rice served with your choice of fried or grilled chicken", price: 85, category: "main", available: true });
+        await storage.createMenuItem({ name: "Special Tasty Waakye", description: "Traditional Ghanaian Waakye with all the trimmings", price: 65, category: "main", available: true });
     }
   }
 
