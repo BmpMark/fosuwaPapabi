@@ -13,7 +13,7 @@ import AuthPage from "@/pages/auth";
 import Dashboard from "@/pages/dashboard/index";
 import RoomService from "@/pages/dashboard/room-service";
 import RoomsAdminPage from "@/pages/dashboard/rooms-admin";
-import MenuAdminPage from "@/pages/dashboard/menu-admin";
+import MenuManagementPage from "@/pages/dashboard/menu-management";
 import ReservationsPage from "@/pages/dashboard/reservations";
 import KitchenOrdersPage from "@/pages/dashboard/kitchen-orders";
 import BillPage from "@/pages/dashboard/bill";
@@ -67,7 +67,7 @@ function Router() {
         <AdminRoute component={RoomsAdminPage} />
       </Route>
       <Route path="/dashboard/menu">
-        <AdminRoute component={MenuAdminPage} />
+        <AdminRoute component={MenuManagementPage} />
       </Route>
       <Route path="/dashboard/reservations">
         <PrivateRoute component={ReservationsPage} />
