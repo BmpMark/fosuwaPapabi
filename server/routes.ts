@@ -5,6 +5,8 @@ import { setupAuth } from "./auth";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { sendBookingNotification, sendOrderNotification } from "./email";
+import { menuItems } from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -181,7 +183,13 @@ export async function registerRoutes(
   // Seed data function (simple check)
   async function seed() {
     console.log("[seed] Starting database seeding check...");
-    // Create admin account if none exist
+    
+    // 1. Force cleanup of old mock data if it somehow persisted
+    await storage.db.delete(menuItems).where(eq(menuItems.name, "Bruschetta"));
+    await storage.db.delete(menuItems).where(eq(menuItems.name, "Steak Frites"));
+    await storage.db.delete(menuItems).where(eq(menuItems.name, "Tiramisu"));
+
+    // 2. Create admin account if none exist
     const adminExists = await storage.getUserByUsername("admin");
     if (!adminExists) {
       console.log("[seed] Creating admin user...");
@@ -208,8 +216,16 @@ export async function registerRoutes(
 
     const menu = await storage.getMenuItems();
     console.log(`[seed] Current menu items count: ${menu.length}`);
-    if (menu.length === 0) {
-        console.log("[seed] Seeding menu items...");
+    // Check if the current menu ONLY contains the old items or is empty
+    const hasCorrectMenu = menu.some(item => item.name.includes("Rice") || item.name.includes("Chicken"));
+    
+    if (menu.length === 0 || !hasCorrectMenu) {
+        console.log("[seed] Seeding correct menu items...");
+        // Clear whatever is there to avoid duplicates or old items
+        if (!hasCorrectMenu && menu.length > 0) {
+            await storage.db.delete(menuItems);
+        }
+
         await storage.createMenuItem({ name: "Fried Rice with Fried/Grilled Chicken", description: "Delicious fried rice served with your choice of fried or grilled chicken", price: 85, category: "main", available: true });
         await storage.createMenuItem({ name: "Jollof Rice with Fried/Grilled Chicken", description: "Ghanaian Jollof rice served with your choice of fried or grilled chicken", price: 85, category: "main", available: true });
         await storage.createMenuItem({ name: "Assorted Jollof / Fried Rice", description: "A mix of Jollof and Fried rice with assorted meats", price: 100, category: "main", available: true });
