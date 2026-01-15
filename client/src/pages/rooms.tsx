@@ -107,6 +107,9 @@ function RoomCard({ room, user, isManagerRoom }: { room: any; user: any; isManag
   const [isOpen, setIsOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
+  // Define isManagerRoom if not provided via props
+  const resolvedIsManagerRoom = isManagerRoom ?? room.number === "6";
+
   const roomEvents = (reservations || [])
     .filter((r: any) => r.roomId === room.id && r.status !== "cancelled")
     .map((r: any) => ({
@@ -219,11 +222,11 @@ function RoomCard({ room, user, isManagerRoom }: { room: any; user: any; isManag
           </DialogContent>
         </Dialog>
 
-        {isManagerRoom ? (
+        {resolvedIsManagerRoom ? (
           <Button variant="outline" className="w-full cursor-not-allowed opacity-70" disabled>
             Management Only
           </Button>
-        ) : user ? (
+        ) : (
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
               <Button className="w-full group-hover:bg-primary/90">
@@ -234,56 +237,63 @@ function RoomCard({ room, user, isManagerRoom }: { room: any; user: any; isManag
               <DialogHeader>
                 <DialogTitle>Book Room {room.number}</DialogTitle>
               </DialogHeader>
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-4 pt-4"
-                >
-                  <FormField
-                    control={form.control}
-                    name="checkIn"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Check-in Date</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="checkOut"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Check-out Date</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={createReservation.isPending}
+              {user ? (
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-4 pt-4"
                   >
-                    {createReservation.isPending
-                      ? "Confirming..."
-                      : "Confirm Reservation"}
-                  </Button>
-                </form>
-              </Form>
+                    <FormField
+                      control={form.control}
+                      name="checkIn"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Check-in Date</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="checkOut"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Check-out Date</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={createReservation.isPending}
+                    >
+                      {createReservation.isPending
+                        ? "Confirming..."
+                        : "Confirm Reservation"}
+                    </Button>
+                  </form>
+                </Form>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-6 space-y-4">
+                  <p className="text-center text-muted-foreground">
+                    Please sign in to your account to complete this booking.
+                  </p>
+                  <Link href="/login" className="w-full">
+                    <Button className="w-full">
+                      Sign in to Book
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </DialogContent>
           </Dialog>
-        ) : (
-          <Link href="/login" className="w-full">
-            <Button variant="outline" className="w-full">
-              Sign in to Book
-            </Button>
-          </Link>
         )}
       </CardFooter>
     </Card>
