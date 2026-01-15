@@ -180,9 +180,11 @@ export async function registerRoutes(
 
   // Seed data function (simple check)
   async function seed() {
+    console.log("[seed] Starting database seeding check...");
     // Create admin account if none exist
     const adminExists = await storage.getUserByUsername("admin");
     if (!adminExists) {
+      console.log("[seed] Creating admin user...");
       const { scrypt, randomBytes } = await import("crypto");
       const { promisify } = await import("util");
       const scryptAsync = promisify(scrypt);
@@ -193,7 +195,9 @@ export async function registerRoutes(
     }
     
     const rooms = await storage.getRooms();
+    console.log(`[seed] Current rooms count: ${rooms.length}`);
     if (rooms.length === 0) {
+        console.log("[seed] Seeding rooms...");
         await storage.createRoom({ number: "101", type: "standard", price: 100, description: "Cozy standard room", capacity: 2, isAvailable: true });
         await storage.createRoom({ number: "102", type: "standard", price: 100, description: "Clean and comfortable standard room", capacity: 2, isAvailable: true });
         await storage.createRoom({ number: "201", type: "executive", price: 250, description: "Spacious executive room with premium amenities", capacity: 2, isAvailable: true });
@@ -201,12 +205,24 @@ export async function registerRoutes(
         await storage.createRoom({ number: "301", type: "apartment", price: 450, description: "Large apartment with kitchenette", capacity: 4, isAvailable: true });
         await storage.createRoom({ number: "302", type: "apartment", price: 450, description: "Family apartment suite", capacity: 4, isAvailable: true });
     }
+
     const menu = await storage.getMenuItems();
+    console.log(`[seed] Current menu items count: ${menu.length}`);
     if (menu.length === 0) {
+        console.log("[seed] Seeding menu items...");
         await storage.createMenuItem({ name: "Fried Rice with Fried/Grilled Chicken", description: "Delicious fried rice served with your choice of fried or grilled chicken", price: 85, category: "main", available: true });
         await storage.createMenuItem({ name: "Jollof Rice with Fried/Grilled Chicken", description: "Ghanaian Jollof rice served with your choice of fried or grilled chicken", price: 85, category: "main", available: true });
+        await storage.createMenuItem({ name: "Assorted Jollof / Fried Rice", description: "A mix of Jollof and Fried rice with assorted meats", price: 100, category: "main", available: true });
         await storage.createMenuItem({ name: "Special Tasty Waakye", description: "Traditional Ghanaian Waakye with all the trimmings", price: 65, category: "main", available: true });
+        await storage.createMenuItem({ name: "Spicy Chicken Pizza (Large)", description: "Pizza topped with spicy chicken", price: 185, category: "main", available: true });
+        await storage.createMenuItem({ name: "Beef Pizza (Large)", description: "Pizza topped with seasoned beef", price: 185, category: "main", available: true });
+        await storage.createMenuItem({ name: "Spring Roll", description: "Crispy vegetable spring rolls", price: 15, category: "appetizer", available: true });
+        await storage.createMenuItem({ name: "Samosa", description: "Savory pastry filled with meat or vegetables", price: 15, category: "appetizer", available: true });
+        await storage.createMenuItem({ name: "Kelewele", description: "Spiced fried plantain chunks", price: 50, category: "appetizer", available: true });
+        await storage.createMenuItem({ name: "Pineapple Juice (Big)", description: "Freshly squeezed pineapple juice", price: 25, category: "drink", available: true });
+        await storage.createMenuItem({ name: "Sobolo Drink (Big)", description: "Traditional hibiscus drink", price: 25, category: "drink", available: true });
     }
+    console.log("[seed] Database seeding check completed.");
   }
 
   seed();
