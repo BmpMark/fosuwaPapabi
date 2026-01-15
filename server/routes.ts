@@ -5,8 +5,8 @@ import { setupAuth } from "./auth";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { sendBookingNotification, sendOrderNotification } from "./email";
-import { menuItems } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { menuItems, rooms } from "@shared/schema";
+import { eq, sql } from "drizzle-orm";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -184,10 +184,15 @@ export async function registerRoutes(
   async function seed() {
     console.log("[seed] Starting database seeding check...");
     
-    // 1. Force cleanup of old mock data if it somehow persisted
+    // 1. Force cleanup of old mock data
     await storage.db.delete(menuItems).where(eq(menuItems.name, "Bruschetta"));
     await storage.db.delete(menuItems).where(eq(menuItems.name, "Steak Frites"));
     await storage.db.delete(menuItems).where(eq(menuItems.name, "Tiramisu"));
+    
+    // Cleanup any room types that aren't in our allowed list
+    await storage.db.delete(rooms).where(
+      sql`type NOT IN ('standard', 'executive', 'apartment')`
+    );
 
     // 2. Create admin account if none exist
     const adminExists = await storage.getUserByUsername("admin");
@@ -202,41 +207,106 @@ export async function registerRoutes(
       await storage.createUser({ username: "admin", password: hashedPassword, role: "admin", name: "Admin User" });
     }
     
-    const rooms = await storage.getRooms();
-    console.log(`[seed] Current rooms count: ${rooms.length}`);
-    if (rooms.length === 0) {
-        console.log("[seed] Seeding rooms...");
-        await storage.createRoom({ number: "101", type: "standard", price: 100, description: "Cozy standard room", capacity: 2, isAvailable: true });
-        await storage.createRoom({ number: "102", type: "standard", price: 100, description: "Clean and comfortable standard room", capacity: 2, isAvailable: true });
-        await storage.createRoom({ number: "201", type: "executive", price: 250, description: "Spacious executive room with premium amenities", capacity: 2, isAvailable: true });
-        await storage.createRoom({ number: "202", type: "executive", price: 250, description: "Luxury executive suite", capacity: 2, isAvailable: true });
-        await storage.createRoom({ number: "301", type: "apartment", price: 450, description: "Large apartment with kitchenette", capacity: 4, isAvailable: true });
-        await storage.createRoom({ number: "302", type: "apartment", price: 450, description: "Family apartment suite", capacity: 4, isAvailable: true });
+    const currentRooms = await storage.getRooms();
+    console.log(`[seed] Current rooms count: ${currentRooms.length}`);
+    if (currentRooms.length === 0) {
+        console.log("[seed] Seeding correct rooms...");
+        await storage.createRoom({ number: "101", type: "standard", price: 100, description: "Cozy standard room with double bed and essential amenities.", capacity: 2, isAvailable: true });
+        await storage.createRoom({ number: "102", type: "standard", price: 100, description: "Comfortable standard room perfect for business travelers.", capacity: 2, isAvailable: true });
+        await storage.createRoom({ number: "201", type: "executive", price: 250, description: "Spacious executive room with premium furnishings and balcony.", capacity: 2, isAvailable: true });
+        await storage.createRoom({ number: "202", type: "executive", price: 250, description: "Luxury executive suite with separate seating area.", capacity: 2, isAvailable: true });
+        await storage.createRoom({ number: "301", type: "apartment", price: 450, description: "Large apartment featuring a kitchenette and master bath.", capacity: 4, isAvailable: true });
+        await storage.createRoom({ number: "302", type: "apartment", price: 450, description: "Family-sized apartment with private terrace.", capacity: 4, isAvailable: true });
     }
 
-    const menu = await storage.getMenuItems();
-    console.log(`[seed] Current menu items count: ${menu.length}`);
-    // Check if the current menu ONLY contains the old items or is empty
-    const hasCorrectMenu = menu.some(item => item.name.includes("Rice") || item.name.includes("Chicken"));
+    const currentMenu = await storage.getMenuItems();
+    console.log(`[seed] Current menu items count: ${currentMenu.length}`);
     
-    if (menu.length === 0 || !hasCorrectMenu) {
-        console.log("[seed] Seeding correct menu items...");
-        // Clear whatever is there to avoid duplicates or old items
-        if (!hasCorrectMenu && menu.length > 0) {
-            await storage.db.delete(menuItems);
-        }
+    // Check if we need to force-seed the full menu
+    const hasFullMenu = currentMenu.length >= 40;
+    
+    if (!hasFullMenu) {
+        console.log("[seed] Seeding full VIP menu...");
+        await storage.db.delete(menuItems);
 
-        await storage.createMenuItem({ name: "Fried Rice with Fried/Grilled Chicken", description: "Delicious fried rice served with your choice of fried or grilled chicken", price: 85, category: "main", available: true });
-        await storage.createMenuItem({ name: "Jollof Rice with Fried/Grilled Chicken", description: "Ghanaian Jollof rice served with your choice of fried or grilled chicken", price: 85, category: "main", available: true });
-        await storage.createMenuItem({ name: "Assorted Jollof / Fried Rice", description: "A mix of Jollof and Fried rice with assorted meats", price: 100, category: "main", available: true });
-        await storage.createMenuItem({ name: "Special Tasty Waakye", description: "Traditional Ghanaian Waakye with all the trimmings", price: 65, category: "main", available: true });
-        await storage.createMenuItem({ name: "Spicy Chicken Pizza (Large)", description: "Pizza topped with spicy chicken", price: 185, category: "main", available: true });
-        await storage.createMenuItem({ name: "Beef Pizza (Large)", description: "Pizza topped with seasoned beef", price: 185, category: "main", available: true });
-        await storage.createMenuItem({ name: "Spring Roll", description: "Crispy vegetable spring rolls", price: 15, category: "appetizer", available: true });
-        await storage.createMenuItem({ name: "Samosa", description: "Savory pastry filled with meat or vegetables", price: 15, category: "appetizer", available: true });
-        await storage.createMenuItem({ name: "Kelewele", description: "Spiced fried plantain chunks", price: 50, category: "appetizer", available: true });
-        await storage.createMenuItem({ name: "Pineapple Juice (Big)", description: "Freshly squeezed pineapple juice", price: 25, category: "drink", available: true });
-        await storage.createMenuItem({ name: "Sobolo Drink (Big)", description: "Traditional hibiscus drink", price: 25, category: "drink", available: true });
+        const menuData = [
+          // MAIN MENU
+          { name: "Fried Rice with Fried/Grilled Chicken", price: 85, category: "main", description: "Savory fried rice served with crispy fried or succulent grilled chicken." },
+          { name: "Jollof Rice with Fried/Grilled Chicken", price: 85, category: "main", description: "Classic Ghanaian Jollof rice paired with delicious chicken." },
+          { name: "Assorted Jollof / Fried Rice", price: 100, category: "main", description: "A rich mix of Jollof and Fried rice with various meats." },
+          { name: "Special Tasty Waakye", price: 65, category: "main", description: "Traditional Waakye served with shito, egg, and meat." },
+          { name: "Jollof/Fried Rice with Fried Goat Meat", price: 100, category: "main", description: "Hearty rice served with tender fried goat meat." },
+          { name: "Jollof / Fried Rice with Chicken Wings", price: 95, category: "main", description: "Choice of rice served with spicy or fried chicken wings." },
+          { name: "Fried/Jollof Rice with Fried Plantain & Chicken", price: 105, category: "main", description: "A complete meal with rice, chicken, and sweet fried plantains." },
+          { name: "Plain Rice with Grilled / Fried Chicken", price: 85, category: "main", description: "Steamed plain rice served with flavorful chicken." },
+          { name: "Fried/Jollof /Plain Rice with Tilapia", price: 130, category: "main", description: "Rice served with fresh grilled or fried tilapia." },
+          { name: "Chicken Chops", price: 50, category: "main", description: "Succulent pieces of seasoned chicken chops." },
+          { name: "Spicy Chicken Wings", price: 50, category: "main", description: "Crispy wings tossed in spicy pepper sauce." },
+
+          // PIZZAS
+          { name: "Fosua Special Pizza (Large)", price: 200, category: "main", description: "Our signature house pizza with assorted toppings." },
+          { name: "Fosua Special Pizza (Medium)", price: 165, category: "main", description: "Our signature house pizza with assorted toppings." },
+          { name: "Spicy Chicken Pizza (Small)", price: 115, category: "main", description: "Pizza topped with spicy chicken and peppers." },
+          { name: "Spicy Chicken Pizza (Medium)", price: 150, category: "main", description: "Pizza topped with spicy chicken and peppers." },
+          { name: "Spicy Chicken Pizza (Large)", price: 185, category: "main", description: "Pizza topped with spicy chicken and peppers." },
+          { name: "Beef Pizza (Small)", price: 115, category: "main", description: "Pizza topped with seasoned ground beef." },
+          { name: "Beef Pizza (Medium)", price: 150, category: "main", description: "Pizza topped with seasoned ground beef." },
+          { name: "Beef Pizza (Large)", price: 185, category: "main", description: "Pizza topped with seasoned ground beef." },
+
+          // APPETIZERS
+          { name: "Spring Roll", price: 15, category: "appetizer", description: "Crispy vegetable or meat spring rolls." },
+          { name: "Samosa", price: 15, category: "appetizer", description: "Savory triangle pastry with spiced filling." },
+          { name: "Gizzard", price: 20, category: "appetizer", description: "Grilled or fried spiced gizzards." },
+          { name: "Sausage", price: 20, category: "appetizer", description: "Grilled savory sausages." },
+          { name: "Kelewele", price: 50, category: "appetizer", description: "Spiced fried plantain chunks - a local favorite." },
+          { name: "Breakfast", price: 55, category: "appetizer", description: "Hearty morning meal options." },
+          { name: "Shawarma", price: 60, category: "appetizer", description: "Chicken or beef wrapped in flatbread with sauce." },
+          { name: "Sandwich", price: 85, category: "appetizer", description: "Freshly made toasted sandwiches." },
+          { name: "Burger", price: 85, category: "appetizer", description: "Juicy burger with fresh toppings." },
+
+          // LOCAL DISHES WITH FUFU
+          { name: "Dry Light Soup", price: 110, category: "main", description: "Light and spicy soup served with Fufu." },
+          { name: "Assorted Palm nut Soup", price: 120, category: "main", description: "Rich palm nut soup with various meats." },
+          { name: "Chicken Light Soup", price: 90, category: "main", description: "Clear spicy soup with tender chicken." },
+          { name: "Goat Light Soup", price: 100, category: "main", description: "Classic Ghanaian light soup with goat meat." },
+          { name: "Medium Size Tilapia Light Soup", price: 130, category: "main", description: "Tilapia soup bursting with flavor." },
+          { name: "Big Size Tilapia Light Soup", price: 150, category: "main", description: "Hearty tilapia soup for the hungry." },
+          { name: "Abunuabunu", price: 120, category: "main", description: "Traditional green soup with snails and mushrooms." },
+
+          // SPECIAL DISHES
+          { name: "Boiled Yam with Kontomire Stew/Palava Sauce", price: 120, category: "main", description: "Traditional yam served with spinach-based sauce." },
+          { name: "Boiled Plantain with Kontomire Stew/Palava Sauce", price: 120, category: "main", description: "Sweet boiled plantain with palava sauce." },
+          { name: "Boiled Yam/ Plantain with Garden Egg Stew", price: 120, category: "main", description: "Choice of yam or plantain with garden egg stew." },
+
+          // FRIES
+          { name: "Yam Chips & Chicken", price: 85, category: "main", description: "Fried yam slices with seasoned chicken." },
+          { name: "Yam Chips & Fried Fish", price: 100, category: "main", description: "Fried yam slices with crispy fish." },
+          { name: "Yam with Grilled Tilapia", price: 130, category: "main", description: "Boiled or fried yam with grilled tilapia." },
+          { name: "Potato Chips with Chicken", price: 85, category: "main", description: "Classic french fries with chicken." },
+          { name: "Potato Chips with Fried Fish", price: 100, category: "main", description: "French fries served with fried fish." },
+          { name: "Potato Chips with Tilapia", price: 130, category: "main", description: "French fries served with tilapia." },
+          { name: "Loaded Fried with Chicken", price: 100, category: "main", description: "Fries topped with chicken and sauces." },
+          { name: "Special Indomie", price: 85, category: "main", description: "Instant noodles stir-fried with vegetables and egg." },
+          { name: "Special Spaghetti", price: 80, category: "main", description: "Stir-fried spaghetti with rich tomato sauce." },
+
+          // JUICES & SALADS
+          { name: "Pineapple Juice (Small)", price: 20, category: "drink", description: "Fresh pineapple juice." },
+          { name: "Pineapple Juice (Big)", price: 25, category: "drink", description: "Fresh pineapple juice." },
+          { name: "Sobolo Drink (Small)", price: 20, category: "drink", description: "Local hibiscus drink." },
+          { name: "Sobolo Drink (Big)", price: 25, category: "drink", description: "Local hibiscus drink." },
+          { name: "Vegetable Salad & Grilled Chicken", price: 90, category: "main", description: "Fresh garden salad with grilled chicken." },
+          { name: "Vegetable Salad & Fried Fish", price: 100, category: "main", description: "Fresh garden salad with fried fish." },
+
+          // LOCAL DISHES
+          { name: "Banku with Medium Tilapia", price: 130, category: "main", description: "Fermented corn and cassava dough with tilapia." },
+          { name: "Banku with Large Tilapia", price: 150, category: "main", description: "Fermented corn and cassava dough with large tilapia." },
+          { name: "Banku with Goat (Okro)", price: 100, category: "main", description: "Banku served with okra stew and goat meat." },
+          { name: "Banku with Assorted Soup", price: 120, category: "main", description: "Banku served with a mix of delicious soups." }
+        ];
+
+        for (const item of menuData) {
+          await storage.createMenuItem({ ...item, available: true });
+        }
     }
     console.log("[seed] Database seeding check completed.");
   }
