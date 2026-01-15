@@ -211,12 +211,12 @@ export async function registerRoutes(
     console.log(`[seed] Current rooms count: ${currentRooms.length}`);
     if (currentRooms.length === 0) {
         console.log("[seed] Seeding correct rooms...");
-        await storage.createRoom({ number: "101", type: "standard", price: 100, description: "Cozy standard room with double bed and essential amenities.", capacity: 2, isAvailable: true });
-        await storage.createRoom({ number: "102", type: "standard", price: 100, description: "Comfortable standard room perfect for business travelers.", capacity: 2, isAvailable: true });
-        await storage.createRoom({ number: "201", type: "executive", price: 250, description: "Spacious executive room with premium furnishings and balcony.", capacity: 2, isAvailable: true });
-        await storage.createRoom({ number: "202", type: "executive", price: 250, description: "Luxury executive suite with separate seating area.", capacity: 2, isAvailable: true });
-        await storage.createRoom({ number: "301", type: "apartment", price: 450, description: "Large apartment featuring a kitchenette and master bath.", capacity: 4, isAvailable: true });
-        await storage.createRoom({ number: "302", type: "apartment", price: 450, description: "Family-sized apartment with private terrace.", capacity: 4, isAvailable: true });
+        await storage.createRoom({ number: "101", type: "standard", price: 300, description: "Cozy standard room with double bed and essential amenities.", capacity: 2, isAvailable: true });
+        await storage.createRoom({ number: "102", type: "standard", price: 300, description: "Comfortable standard room perfect for business travelers.", capacity: 2, isAvailable: true });
+        await storage.createRoom({ number: "201", type: "executive", price: 500, description: "Spacious executive room with premium furnishings and balcony.", capacity: 2, isAvailable: true });
+        await storage.createRoom({ number: "202", type: "executive", price: 500, description: "Luxury executive suite with separate seating area.", capacity: 2, isAvailable: true });
+        await storage.createRoom({ number: "301", type: "apartment", price: 600, description: "Large apartment featuring a kitchenette and master bath.", capacity: 4, isAvailable: true });
+        await storage.createRoom({ number: "302", type: "apartment", price: 600, description: "Family-sized apartment with private terrace.", capacity: 4, isAvailable: true });
     }
 
     const currentMenu = await storage.getMenuItems();
