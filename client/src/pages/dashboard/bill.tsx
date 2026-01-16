@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@shared/routes";
 import { type Reservation, type Order } from "@shared/schema";
+import { DashboardSidebar } from "@/components/dashboard-sidebar";
 
 export default function BillPage() {
   const { user } = useAuth();
@@ -24,57 +25,65 @@ export default function BillPage() {
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
-        <h1 className="text-3xl font-display font-bold">Your Folio / Bill</h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Room Charges</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {userReservations.map(r => (
-                  <div key={r.id} className="flex justify-between border-b pb-2">
-                    <span>Reservation #{r.id}</span>
-                    <span className="font-semibold">GH₵{(r.totalPrice / 100).toFixed(2)}</span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row gap-8">
+        <DashboardSidebar />
+        <div className="flex-1 space-y-8">
+          <h1 className="text-3xl font-display font-bold">Your Folio / Bill</h1>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="w-full overflow-hidden">
+              <CardHeader>
+                <CardTitle>Room Charges</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {userReservations.length === 0 && (
+                    <p className="text-muted-foreground text-sm italic">No room charges found.</p>
+                  )}
+                  {userReservations.map(r => (
+                    <div key={r.id} className="flex flex-col sm:flex-row justify-between border-b pb-2 gap-1">
+                      <span className="text-sm">Reservation #{r.id}</span>
+                      <span className="font-semibold text-sm">GH₵{(r.totalPrice / 100).toFixed(2)}</span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between font-bold text-lg pt-2">
+                    <span className="text-base">Room Total</span>
+                    <span className="text-base">GH₵{(roomTotal / 100).toFixed(2)}</span>
                   </div>
-                ))}
-                <div className="flex justify-between font-bold text-lg pt-2">
-                  <span>Room Total</span>
-                  <span>GH₵{(roomTotal / 100).toFixed(2)}</span>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+
+            <Card className="w-full overflow-hidden">
+              <CardHeader>
+                <CardTitle>Restaurant & Services</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {userOrders.length === 0 && (
+                    <p className="text-muted-foreground text-sm italic">No service charges found.</p>
+                  )}
+                  {userOrders.map(o => (
+                    <div key={o.id} className="flex flex-col sm:flex-row justify-between border-b pb-2 gap-1">
+                      <span className="text-sm">Order #{o.id} ({o.paymentMethod})</span>
+                      <span className="font-semibold text-sm">GH₵{(o.totalAmount / 100).toFixed(2)}</span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between font-bold text-lg pt-2">
+                    <span className="text-base">Service Total</span>
+                    <span className="text-base">GH₵{(orderTotal / 100).toFixed(2)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="bg-primary text-primary-foreground w-full overflow-hidden">
+            <CardContent className="p-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
+              <h2 className="text-xl sm:text-2xl font-bold">Total Balance</h2>
+              <div className="text-2xl sm:text-3xl font-bold">GH₵{((roomTotal + orderTotal) / 100).toFixed(2)}</div>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Restaurant & Services</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {userOrders.map(o => (
-                  <div key={o.id} className="flex justify-between border-b pb-2">
-                    <span>Order #{o.id} ({o.paymentMethod})</span>
-                    <span className="font-semibold">GH₵{(o.totalAmount / 100).toFixed(2)}</span>
-                  </div>
-                ))}
-                <div className="flex justify-between font-bold text-lg pt-2">
-                  <span>Service Total</span>
-                  <span>GH₵{(orderTotal / 100).toFixed(2)}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card className="bg-primary text-primary-foreground">
-          <CardContent className="p-6 flex justify-between items-center">
-            <h2 className="text-2xl font-bold">Total Balance</h2>
-            <div className="text-3xl font-bold">GH₵{((roomTotal + orderTotal) / 100).toFixed(2)}</div>
-          </CardContent>
-        </Card>
       </div>
     </Layout>
   );
