@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 import shawarmaImg from "@assets/Shawarma_1768567853871.jpg";
 import spicyWingsImg from "@assets/Spicy_chicken_wings_1768568182882.jpg";
+import localFoodsImg from "@assets/local_foods_1768568510046.jpg";
 
 const FOOD_IMAGES = [
   {
@@ -12,7 +13,7 @@ const FOOD_IMAGES = [
     title: "Vegetable Salad",
   },
   {
-    url: "https://images.unsplash.com/photo-1567620905732-2d1ec7bb7445?q=80&w=800&auto=format&fit=crop",
+    url: localFoodsImg,
     title: "Ghanaian Delicacies",
   },
   {
