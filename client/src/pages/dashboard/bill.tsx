@@ -84,6 +84,7 @@ export default function BillPage() {
               <div className="text-2xl sm:text-3xl font-bold">GH₵{((roomTotal + orderTotal) / 100).toFixed(2)}</div>
             </CardContent>
           </Card>
+        </div>
       </div>
     </Layout>
   );
