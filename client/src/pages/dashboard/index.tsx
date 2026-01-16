@@ -15,17 +15,17 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8 flex flex-col md:flex-row gap-6 md:gap-8">
         <DashboardSidebar />
-        <div className="flex-1 space-y-8">
-          <div className="flex justify-between items-center">
+        <div className="flex-1 space-y-6 md:space-y-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="font-display text-3xl font-bold mb-2">Welcome back, {user.name}</h1>
-              <p className="text-muted-foreground">Here's what's happening today.</p>
+              <h1 className="font-display text-2xl md:text-3xl font-bold mb-1 md:mb-2">Welcome back, {user.name}</h1>
+              <p className="text-sm md:text-base text-muted-foreground">Here's what's happening today.</p>
             </div>
             {(user.role === "admin" || user.role === "staff") && (
               <Link href="/dashboard/reports">
-                <Button className="gap-2">
+                <Button className="gap-2 w-full sm:w-auto">
                   <BarChart3 className="h-4 w-4" />
                   View Reports
                 </Button>
@@ -52,7 +52,7 @@ function AdminStats() {
   const pendingOrders = orders.filter(o => o.status === "pending");
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
       <StatCard 
         title="Total Revenue" 
         value={`GH₵${(totalRevenue / 100).toLocaleString()}`} 
@@ -84,7 +84,7 @@ function GuestStats() {
   const upcoming = myReservations.filter(r => new Date(r.checkIn) >= new Date());
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
       <StatCard 
         title="Upcoming Stays" 
         value={upcoming.length.toString()} 
@@ -97,7 +97,7 @@ function GuestStats() {
           <CardDescription className="text-primary-foreground/70">Order room service directly to your room.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-4xl font-bold opacity-20">24/7</div>
+          <div className="text-3xl md:text-4xl font-bold opacity-20">24/7</div>
         </CardContent>
       </Card>
     </div>

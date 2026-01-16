@@ -51,7 +51,7 @@ export function ChatWidget() {
           <MessageSquare className="h-6 w-6" />
         </Button>
       ) : (
-        <Card className="w-80 h-[450px] shadow-2xl flex flex-col">
+        <Card className="w-[calc(100vw-2rem)] sm:w-80 h-[450px] max-h-[calc(100vh-2rem)] shadow-2xl flex flex-col">
           <CardHeader className="p-4 border-b flex flex-row items-center justify-between">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
               <MessageSquare className="h-4 w-4" /> Room Service Chat
@@ -66,7 +66,7 @@ export function ChatWidget() {
                     key={msg.id} 
                     className={`flex flex-col ${msg.senderId === user.id ? "items-end" : "items-start"}`}
                   >
-                    <div className={`px-3 py-2 rounded-lg text-sm max-w-[80%] ${
+                    <div className={`px-3 py-2 rounded-lg text-sm max-w-[85%] sm:max-w-[80%] ${
                       msg.senderId === user.id 
                         ? "bg-primary text-primary-foreground" 
                         : "bg-muted text-muted-foreground"
@@ -82,12 +82,13 @@ export function ChatWidget() {
                 ))}
               </div>
             </ScrollArea>
-            <div className="p-4 border-t flex gap-2">
+            <div className="p-3 sm:p-4 border-t flex gap-2">
               <Input 
                 placeholder="Type a message..." 
                 value={input} 
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && input && sendMessage.mutate(input)}
+                className="text-base"
               />
               <Button 
                 size="icon" 

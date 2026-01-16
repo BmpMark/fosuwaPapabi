@@ -108,7 +108,7 @@ export default function RestaurantPage() {
 
   return (
     <Layout>
-      <div className="bg-primary py-20 text-primary-foreground relative overflow-hidden">
+      <div className="bg-primary py-12 md:py-20 text-primary-foreground relative overflow-hidden">
         {/* luxury restaurant food plating */}
         <div className="absolute inset-0 opacity-20">
           <img
@@ -118,28 +118,28 @@ export default function RestaurantPage() {
           />
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <h1 className="font-display text-6xl font-bold mb-4">
+          <h1 className="font-display text-4xl md:text-6xl font-bold mb-4">
             Fosuwa Special
           </h1>
-          <p className="text-xl text-primary-foreground/80 max-w-2xl mx-auto font-light">
+          <p className="text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto font-light">
             A culinary experience curated with passion and local ingredients.
           </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 md:-mt-12 relative z-20">
         <FoodSlideshow />
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <Tabs defaultValue={categories[0]} className="w-full">
-          <div className="flex justify-center mb-12">
-            <TabsList className="bg-muted h-auto p-1 rounded-full">
+          <div className="flex justify-center mb-8 md:mb-12 overflow-x-auto pb-2 scrollbar-hide">
+            <TabsList className="bg-muted h-auto p-1 rounded-full inline-flex">
               {categories.map((cat) => (
                 <TabsTrigger
                   key={cat}
                   value={cat}
-                  className="rounded-full px-8 py-3 text-base capitalize data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  className="rounded-full px-4 md:px-8 py-2 md:py-3 text-sm md:text-base capitalize data-[state=active]:bg-white data-[state=active]:shadow-sm whitespace-nowrap"
                 >
                   {cat}
                 </TabsTrigger>

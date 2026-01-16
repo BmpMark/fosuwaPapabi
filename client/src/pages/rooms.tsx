@@ -71,20 +71,20 @@ export default function RoomsPage() {
 
   return (
     <Layout>
-      <div className="bg-muted/30 py-16">
+      <div className="bg-muted/30 py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="font-display text-5xl font-bold text-primary mb-4">
+          <h1 className="font-display text-4xl md:text-5xl font-bold text-primary mb-4">
             Our Rooms
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
             Choose from our selection of elegantly appointed rooms and
             apartments.
           </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {rooms.map((room) => {
             const isManagerRoom = room.number === "6";
             return (

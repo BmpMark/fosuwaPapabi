@@ -11,8 +11,6 @@ import {
   User,
   LogOut,
   LayoutDashboard,
-  ShoppingBag,
-  CalendarCheck,
   Moon,
   Sun,
 } from "lucide-react";
@@ -25,6 +23,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ChatWidget } from "./chat-widget";
 
 export function Navbar() {
   const [location] = useLocation();
@@ -42,7 +42,6 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-border/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20 items-center">
-          {/* Logo */}
           <Link href="/">
             <div className="flex items-center gap-2 cursor-pointer group">
               <div className="w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-display font-bold text-xl group-hover:scale-110 transition-transform">
@@ -54,7 +53,6 @@ export function Navbar() {
             </div>
           </Link>
 
-          {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
             {links.map((link) => (
               <Link key={link.href} href={link.href}>
@@ -75,27 +73,14 @@ export function Navbar() {
               size="icon"
               variant="ghost"
               onClick={toggleTheme}
-              title={
-                theme === "light"
-                  ? "Switch to dark mode"
-                  : "Switch to light mode"
-              }
-              data-testid="button-theme-toggle"
             >
-              {theme === "light" ? (
-                <Moon className="h-5 w-5" />
-              ) : (
-                <Sun className="h-5 w-5" />
-              )}
+              {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
             </Button>
 
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="relative h-10 w-10 rounded-full"
-                  >
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                     <Avatar className="h-10 w-10 border border-border">
                       <AvatarFallback className="bg-primary/10 text-primary">
                         {user.name.charAt(0).toUpperCase()}
@@ -103,7 +88,7 @@ export function Navbar() {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuContent className="w-56" align="end">
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard">
                       <div className="flex items-center w-full cursor-pointer">
@@ -120,84 +105,81 @@ export function Navbar() {
               </DropdownMenu>
             ) : (
               <Link href="/login">
-                <Button
-                  variant="default"
-                  className="rounded-full px-6 font-semibold"
-                >
+                <Button variant="default" className="rounded-full px-6 font-semibold">
                   Sign In
                 </Button>
               </Link>
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsOpen(!isOpen)}
-            >
-              {isOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
+          <div className="md:hidden flex items-center gap-2">
+            <Button size="icon" variant="ghost" onClick={toggleTheme} className="mr-2">
+              {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
             </Button>
+            
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px]">
+                <SheetHeader>
+                  <SheetTitle className="text-left font-display text-2xl">Fosuwa Papabi</SheetTitle>
+                </SheetHeader>
+                <div className="flex flex-col gap-4 mt-8">
+                  {links.map((link) => (
+                    <Link key={link.href} href={link.href}>
+                      <div
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-3 text-lg font-medium rounded-lg transition-colors cursor-pointer",
+                          location === link.href ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                        )}
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <link.icon className="h-5 w-5" />
+                        {link.label}
+                      </div>
+                    </Link>
+                  ))}
+                  <div className="border-t border-border my-2 pt-4">
+                    {user ? (
+                      <>
+                        <Link href="/dashboard">
+                          <div
+                            className="flex items-center gap-3 px-4 py-3 text-lg font-medium text-primary hover:bg-muted rounded-lg cursor-pointer"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            <LayoutDashboard className="h-5 w-5" />
+                            Dashboard
+                          </div>
+                        </Link>
+                        <div
+                          className="flex items-center gap-3 px-4 py-3 text-lg font-medium text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
+                          onClick={() => {
+                            logout.mutate();
+                            setIsOpen(false);
+                          }}
+                        >
+                          <LogOut className="h-5 w-5" />
+                          Log out
+                        </div>
+                      </>
+                    ) : (
+                      <Link href="/login">
+                        <Button className="w-full justify-start gap-3" variant="outline" onClick={() => setIsOpen(false)}>
+                          <User className="h-5 w-5" />
+                          Sign In
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
-
-      {/* Mobile Nav */}
-      {isOpen && (
-        <div className="md:hidden border-t border-border bg-background">
-          <div className="space-y-1 px-4 py-6">
-            {links.map((link) => (
-              <Link key={link.href} href={link.href}>
-                <div
-                  className="flex items-center gap-3 px-4 py-3 text-base font-medium text-foreground hover:bg-muted rounded-lg cursor-pointer"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <link.icon className="h-5 w-5" />
-                  {link.label}
-                </div>
-              </Link>
-            ))}
-            {user ? (
-              <>
-                <Link href="/dashboard">
-                  <div
-                    className="flex items-center gap-3 px-4 py-3 text-base font-medium text-primary hover:bg-muted rounded-lg cursor-pointer"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <LayoutDashboard className="h-5 w-5" />
-                    Dashboard
-                  </div>
-                </Link>
-                <div
-                  className="flex items-center gap-3 px-4 py-3 text-base font-medium text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
-                  onClick={() => {
-                    logout.mutate();
-                    setIsOpen(false);
-                  }}
-                >
-                  <LogOut className="h-5 w-5" />
-                  Log out
-                </div>
-              </>
-            ) : (
-              <Link href="/login">
-                <div
-                  className="flex items-center gap-3 px-4 py-3 text-base font-medium text-primary hover:bg-muted rounded-lg cursor-pointer"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <User className="h-5 w-5" />
-                  Sign In
-                </div>
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
     </nav>
   );
 }
@@ -214,40 +196,21 @@ export function Footer() {
           </p>
         </div>
         <div>
-          <h4 className="font-bold mb-4 uppercase tracking-wider text-sm">
-            Contact
-          </h4>
+          <h4 className="font-bold mb-4 uppercase tracking-wider text-sm">Contact</h4>
           <ul className="space-y-2 text-primary-foreground/70">
             <li>Kwafokrom, Nsawam-Kumasi road</li>
             <li>+233 54 845 7017</li>
           </ul>
         </div>
         <div>
-          <h4 className="font-bold mb-4 uppercase tracking-wider text-sm">
-            Links
-          </h4>
+          <h4 className="font-bold mb-4 uppercase tracking-wider text-sm">Links</h4>
           <ul className="space-y-2 text-primary-foreground/70">
-            <li>
-              <Link href="/rooms" className="hover:text-white transition">
-                Rooms & Suites
-              </Link>
-            </li>
-            <li>
-              <Link href="/restaurant" className="hover:text-white transition">
-                Dining
-              </Link>
-            </li>
-            <li>
-              <Link href="/events" className="hover:text-white transition">
-                Events
-              </Link>
-            </li>
+            <li><Link href="/rooms" className="hover:text-white transition">Rooms & Suites</Link></li>
+            <li><Link href="/restaurant" className="hover:text-white transition">Dining</Link></li>
           </ul>
         </div>
         <div>
-          <h4 className="font-bold mb-4 uppercase tracking-wider text-sm">
-            Social
-          </h4>
+          <h4 className="font-bold mb-4 uppercase tracking-wider text-sm">Social</h4>
           <ul className="space-y-2 text-primary-foreground/70">
             <li>Instagram</li>
             <li>Twitter</li>
@@ -261,8 +224,6 @@ export function Footer() {
     </footer>
   );
 }
-
-import { ChatWidget } from "./chat-widget";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
