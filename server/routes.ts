@@ -246,9 +246,9 @@ export async function registerRoutes(
           // PIZZAS
           { name: "Fosua Special Pizza (Large)", price: 200, category: "main", description: "Our signature house pizza with assorted toppings." },
           { name: "Fosua Special Pizza (Medium)", price: 165, category: "main", description: "Our signature house pizza with assorted toppings." },
-          { name: "Spicy Chicken Pizza (Small)", price: 115, category: "main", description: "Pizza topped with spicy chicken and peppers." },
-          { name: "Spicy Chicken Pizza (Medium)", price: 150, category: "main", description: "Pizza topped with spicy chicken and peppers." },
-          { name: "Spicy Chicken Pizza (Large)", price: 185, category: "main", description: "Pizza topped with spicy chicken and peppers." },
+          { name: "Cheese Pizza (Small)", price: 115, category: "main", description: "Pizza topped with melty cheese and peppers." },
+          { name: "Cheese Pizza (Medium)", price: 150, category: "main", description: "Pizza topped with melty cheese and peppers." },
+          { name: "Cheese Pizza (Large)", price: 185, category: "main", description: "Pizza topped with melty cheese and peppers." },
           { name: "Beef Pizza (Small)", price: 115, category: "main", description: "Pizza topped with seasoned ground beef." },
           { name: "Beef Pizza (Medium)", price: 150, category: "main", description: "Pizza topped with seasoned ground beef." },
           { name: "Beef Pizza (Large)", price: 185, category: "main", description: "Pizza topped with seasoned ground beef." },

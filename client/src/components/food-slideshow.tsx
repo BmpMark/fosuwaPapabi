@@ -3,6 +3,8 @@ import Autoplay from "embla-carousel-autoplay";
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 
+import shawarmaImg from "@assets/Shawarma_1768567853871.jpg";
+
 const FOOD_IMAGES = [
   {
     url: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",
@@ -14,11 +16,11 @@ const FOOD_IMAGES = [
   },
   {
     url: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=800&auto=format&fit=crop",
-    title: "Spicy Pizza",
+    title: "Cheese Pizza",
   },
   {
-    url: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?q=80&w=800&auto=format&fit=crop",
-    title: "Gourmet Burgers",
+    url: shawarmaImg,
+    title: "Shawarma",
   },
   {
     url: "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop",
