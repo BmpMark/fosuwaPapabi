@@ -209,6 +209,20 @@ export async function registerRoutes(
     
     const currentRooms = await storage.getRooms();
     console.log(`[seed] Current rooms count: ${currentRooms.length}`);
+    
+    // Force price sync if rooms already exist but have old prices
+    if (currentRooms.length > 0) {
+      console.log("[seed] Syncing room prices...");
+      await storage.db.execute(sql`
+        UPDATE rooms SET price = CASE 
+          WHEN type = 'standard' THEN 300 
+          WHEN type = 'executive' THEN 500 
+          WHEN type = 'apartment' THEN 600 
+          ELSE price 
+        END
+      `);
+    }
+
     if (currentRooms.length === 0) {
         console.log("[seed] Seeding correct rooms...");
         await storage.createRoom({ number: "101", type: "standard", price: 300, description: "Cozy standard room with double bed and essential amenities.", capacity: 2, isAvailable: true });
