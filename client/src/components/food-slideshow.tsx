@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 
 import shawarmaImg from "@assets/Shawarma_1768567853871.jpg";
+import spicyWingsImg from "@assets/Spicy_chicken_wings_1768568182882.jpg";
 
 const FOOD_IMAGES = [
   {
     url: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",
-    title: "Fresh Salads",
+    title: "Vegetable Salad",
   },
   {
     url: "https://images.unsplash.com/photo-1567620905732-2d1ec7bb7445?q=80&w=800&auto=format&fit=crop",
@@ -23,8 +24,8 @@ const FOOD_IMAGES = [
     title: "Shawarma",
   },
   {
-    url: "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop",
-    title: "Grilled Meats",
+    url: spicyWingsImg,
+    title: "Spicy Chicken Wings",
   },
   {
     url: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=800&auto=format&fit=crop",
