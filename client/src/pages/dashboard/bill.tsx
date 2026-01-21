@@ -43,12 +43,12 @@ export default function BillPage() {
                   {userReservations.map(r => (
                     <div key={r.id} className="flex flex-col sm:flex-row justify-between border-b pb-2 gap-1">
                       <span className="text-sm">Reservation #{r.id}</span>
-                      <span className="font-semibold text-sm">GH₵{(r.totalPrice / 100).toFixed(2)}</span>
+                      <span className="font-semibold text-sm">GH₵{(r.totalPrice).toFixed(2)}</span>
                     </div>
                   ))}
                   <div className="flex justify-between font-bold text-lg pt-2">
                     <span className="text-base">Room Total</span>
-                    <span className="text-base">GH₵{(roomTotal / 100).toFixed(2)}</span>
+                    <span className="text-base">GH₵{(roomTotal).toFixed(2)}</span>
                   </div>
                 </div>
               </CardContent>
@@ -66,12 +66,12 @@ export default function BillPage() {
                   {userOrders.map(o => (
                     <div key={o.id} className="flex flex-col sm:flex-row justify-between border-b pb-2 gap-1">
                       <span className="text-sm">Order #{o.id} ({o.paymentMethod})</span>
-                      <span className="font-semibold text-sm">GH₵{(o.totalAmount / 100).toFixed(2)}</span>
+                      <span className="font-semibold text-sm">GH₵{(o.totalAmount).toFixed(2)}</span>
                     </div>
                   ))}
                   <div className="flex justify-between font-bold text-lg pt-2">
                     <span className="text-base">Service Total</span>
-                    <span className="text-base">GH₵{(orderTotal / 100).toFixed(2)}</span>
+                    <span className="text-base">GH₵{(orderTotal).toFixed(2)}</span>
                   </div>
                 </div>
               </CardContent>
@@ -81,7 +81,7 @@ export default function BillPage() {
           <Card className="bg-primary text-primary-foreground w-full overflow-hidden">
             <CardContent className="p-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
               <h2 className="text-xl sm:text-2xl font-bold">Total Balance</h2>
-              <div className="text-2xl sm:text-3xl font-bold">GH₵{((roomTotal + orderTotal) / 100).toFixed(2)}</div>
+              <div className="text-2xl sm:text-3xl font-bold">GH₵{((roomTotal + orderTotal)).toFixed(2)}</div>
             </CardContent>
           </Card>
         </div>
