@@ -1,15 +1,32 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useReservations } from "@/hooks/use-reservations";
+import { useOnline } from "@/hooks/use-online";
 import { Layout } from "@/components/layout";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { OfflineIndicator } from "@/components/offline-indicator";
+import { DataFreshnessIndicator } from "@/components/data-freshness-indicator";
 import { useLocation } from "wouter";
+import { CloudOff, Save, AlertCircle } from "lucide-react";
+import React from "react";
 
 export default function ReservationsPage() {
   const { user } = useAuth();
-  const { reservations } = useReservations();
+  const { reservations, isLoading } = useReservations();
+  const { isOnline, wasOffline } = useOnline();
   const [, setLocation] = useLocation();
+
+  // Track data freshness
+  const [dataTimestamp, setDataTimestamp] = React.useState<number | undefined>();
+
+  // Update timestamp when data loads
+  React.useEffect(() => {
+    if (reservations && reservations.length >= 0 && !isLoading) {
+      setDataTimestamp(Date.now());
+    }
+  }, [reservations, isLoading]);
 
   if (!user) return null;
 
@@ -41,14 +58,64 @@ export default function ReservationsPage() {
         <DashboardSidebar />
         <div className="flex-1 space-y-6">
           <div>
-            <h1 className="font-display text-3xl font-bold mb-2">
-              {isAdmin ? "All Reservations" : "My Reservations"}
-            </h1>
-            <p className="text-muted-foreground">
-              {isAdmin 
-                ? "View and manage all guest reservations" 
-                : "View your room bookings and check-ins"}
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="font-display text-3xl font-bold mb-2">
+                  {isAdmin ? "All Reservations" : "My Reservations"}
+                </h1>
+                <p className="text-muted-foreground">
+                  {isAdmin
+                    ? "View and manage all guest reservations"
+                    : "View your room bookings and check-ins"}
+                </p>
+              </div>
+              <div className="hidden md:block">
+                <div className="flex items-center gap-2">
+                  <OfflineIndicator variant="badge" />
+                  <DataFreshnessIndicator timestamp={dataTimestamp} isOffline={!isOnline && wasOffline} />
+                </div>
+              </div>
+            </div>
+
+            {!isOnline && (
+              <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950/20 mb-6">
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-3">
+                    <CloudOff className="h-5 w-5 text-orange-600 mt-0.5" />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-orange-800 dark:text-orange-200 mb-1">
+                        You're Currently Offline
+                      </h3>
+                      <p className="text-sm text-orange-700 dark:text-orange-300 mb-3">
+                        You can still view your cached reservations. Any changes will be synced when you're back online.
+                      </p>
+                      <div className="flex items-center gap-2 text-xs text-orange-600 dark:text-orange-400">
+                        <AlertCircle className="h-3 w-3" />
+                        Showing cached data from your last sync
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {isOnline && wasOffline && (
+              <Card className="border-green-200 bg-green-50 dark:bg-green-950/20 mb-6">
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-3">
+                    <Save className="h-5 w-5 text-green-600 mt-0.5" />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-green-800 dark:text-green-200 mb-1">
+                        Back Online - Data Synced
+                      </h3>
+                      <p className="text-sm text-green-700 dark:text-green-300">
+                        Your reservations have been synchronized with the latest updates.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {displayedReservations.length === 0 ? (

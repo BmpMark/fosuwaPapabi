@@ -25,6 +25,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ChatWidget } from "./chat-widget";
+import { OfflineIndicator } from "./offline-indicator";
 
 export function Navbar() {
   const [location] = useLocation();
@@ -52,6 +53,10 @@ export function Navbar() {
               </span>
             </div>
           </Link>
+
+          <div className="hidden md:block">
+            <OfflineIndicator variant="badge" />
+          </div>
 
           <div className="hidden md:flex items-center gap-8">
             {links.map((link) => (
@@ -228,6 +233,7 @@ export function Footer() {
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-muted/20">
+      <OfflineIndicator variant="banner" />
       <Navbar />
       <main className="flex-grow fade-in">{children}</main>
       <Footer />

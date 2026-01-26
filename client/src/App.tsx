@@ -19,6 +19,7 @@ import KitchenOrdersPage from "@/pages/dashboard/kitchen-orders";
 import BillPage from "@/pages/dashboard/bill";
 import ReportsPage from "@/pages/dashboard/reports";
 import NotFound from "@/pages/not-found";
+import OfflinePage from "@/pages/offline";
 
 function PrivateRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useAuth();
@@ -81,7 +82,10 @@ function Router() {
       <Route path="/dashboard/bill">
         <PrivateRoute component={BillPage} />
       </Route>
-      
+
+      {/* Offline Page */}
+      <Route path="/offline" component={OfflinePage} />
+
       {/* Fallback */}
       <Route component={NotFound} />
     </Switch>

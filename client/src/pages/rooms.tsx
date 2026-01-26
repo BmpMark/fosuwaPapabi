@@ -86,7 +86,7 @@ export default function RoomsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {rooms.map((room) => {
-            const isManagerRoom = room.number === "6";
+            const isManagerRoom = room.number === "2";
             return (
               <RoomCard 
                 key={room.id} 
@@ -108,7 +108,7 @@ function RoomCard({ room, user, isManagerRoom }: { room: any; user: any; isManag
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   // Define isManagerRoom if not provided via props
-  const resolvedIsManagerRoom = isManagerRoom ?? room.number === "6";
+  const resolvedIsManagerRoom = isManagerRoom ?? room.number === "2";
 
   const roomEvents = (reservations || [])
     .filter((r: any) => r.roomId === room.id && r.status !== "cancelled")

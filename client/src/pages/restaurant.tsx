@@ -13,20 +13,24 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Minus, ShoppingBag } from "lucide-react";
+import { Plus, Minus, ShoppingBag, Wifi, WifiOff } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { useOnline } from "@/hooks/use-online";
+import { OfflineCache, BackgroundSync, NetworkUtils } from "@/lib/offline-utils";
 
 export default function RestaurantPage() {
   const { menu, isLoadingMenu, createOrder } = useRestaurant();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { isOnline } = useOnline();
   const [cart, setCart] = useState<{ id: number; quantity: number }[]>([]);
   const [orderType, setOrderType] = useState<"dine_in" | "take_away" | "room_service">("dine_in");
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "room_folio">("cash");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (isLoadingMenu) {
     return (
@@ -66,7 +70,11 @@ export default function RestaurantPage() {
     });
   };
 
-  const submitOrder = () => {
+  const submitOrder = async () => {
+    if (cart.length === 0) return;
+
+    setIsSubmitting(true);
+
     const orderItems = cart.map((item) => ({
       menuItemId: item.id,
       quantity: item.quantity,
@@ -76,29 +84,57 @@ export default function RestaurantPage() {
       return acc + (menuItem ? menuItem.price * cartItem.quantity : 0);
     }, 0);
 
-    createOrder.mutate(
-      {
-        order: {
-          userId: user!.id,
-          roomId: null,
-          type: orderType,
-          paymentMethod,
-          totalAmount,
-          status: "pending",
-        },
-        items: orderItems,
-      },
-      {
-        onSuccess: () => {
-          setCart([]);
-          setOrderType("dine_in");
-          toast({
-            title: "Order Placed",
-            description: "Your order has been submitted.",
-          });
-        },
-      },
-    );
+    const orderData = {
+      userId: user!.id,
+      roomId: null,
+      type: orderType,
+      paymentMethod,
+      totalAmount,
+      status: "pending" as const,
+      items: orderItems,
+      timestamp: Date.now(),
+      offline: !isOnline,
+    };
+
+    try {
+      if (isOnline) {
+        // Online: Submit directly to server
+        await createOrder.mutateAsync({
+          order: orderData,
+          items: orderItems,
+        });
+
+        toast({
+          title: "Order Placed",
+          description: "Your order has been submitted successfully.",
+        });
+      } else {
+        // Offline: Store for background sync
+        await OfflineCache.storePendingOrder(orderData);
+
+        // Register background sync
+        await BackgroundSync.registerSync();
+
+        toast({
+          title: "Order Saved Offline",
+          description: "Your order will be submitted when you're back online.",
+        });
+      }
+
+      // Clear cart and reset form
+      setCart([]);
+      setOrderType("dine_in");
+
+    } catch (error) {
+      console.error('Order submission failed:', error);
+      toast({
+        title: "Order Failed",
+        description: "There was an error placing your order. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const total = cart.reduce((acc, cartItem) => {
@@ -223,6 +259,7 @@ export default function RestaurantPage() {
             <Dialog>
               <DialogTrigger asChild>
                 <Button size="lg" className="gap-2 shadow-lg">
+                  {!isOnline && <WifiOff className="w-4 h-4" />}
                   <ShoppingBag className="w-5 h-5" />
                   <span>Order ({cart.length})</span>
                   <span>GH₵{total.toFixed(2)}</span>
@@ -230,7 +267,15 @@ export default function RestaurantPage() {
               </DialogTrigger>
               <DialogContent className="max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Review Your Order</DialogTitle>
+                  <DialogTitle className="flex items-center gap-2">
+                    Review Your Order
+                    {!isOnline && (
+                      <Badge variant="secondary" className="bg-orange-100 text-orange-800 gap-1">
+                        <WifiOff className="h-3 w-3" />
+                        Offline
+                      </Badge>
+                    )}
+                  </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-6">
                   {cart.map((item) => {
@@ -305,10 +350,22 @@ export default function RestaurantPage() {
                   <Button
                     className="w-full"
                     onClick={submitOrder}
-                    disabled={createOrder.isPending}
+                    disabled={isSubmitting || createOrder.isPending}
                   >
-                    {createOrder.isPending ? "Placing Order..." : "Place Order"}
+                    {isSubmitting
+                      ? "Saving Order..."
+                      : isOnline
+                        ? (createOrder.isPending ? "Placing Order..." : "Place Order")
+                        : "Save for Later"
+                    }
                   </Button>
+
+                  {!isOnline && (
+                    <div className="text-xs text-muted-foreground text-center mt-2">
+                      <Wifi className="h-3 w-3 inline mr-1" />
+                      Order will sync when you're back online
+                    </div>
+                  )}
                   <Button
                     type="button"
                     variant="outline"
