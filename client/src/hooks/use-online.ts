@@ -133,9 +133,13 @@ export function useOnline(): UseOnlineReturn {
       // - Cached form data
 
       // For example, you could dispatch custom events or use service worker sync
-      if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+      if ('serviceWorker' in navigator) {
         const registration = await navigator.serviceWorker.ready;
-        await registration.sync.register('background-sync');
+        // Check if sync manager is available
+        if ('sync' in registration) {
+          // @ts-expect-error: Property 'sync' might not be typed in TS yet
+          await registration.sync.register('background-sync');
+        }
       }
 
       // Reset save for later flag

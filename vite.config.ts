@@ -8,65 +8,65 @@ export default defineConfig({
   plugins: [
     react(),
     runtimeErrorOverlay(),
-    VitePWA({
-      registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
-      manifest: {
-        name: "Fosuwa Papabi Hotel",
-        short_name: "Fosuwa Papabi",
-        description: "Luxury hotel booking and management system with offline capabilities",
-        theme_color: "#000000",
-        background_color: "#ffffff",
-        display: "standalone",
-        orientation: "portrait-primary",
-        scope: "/",
-        start_url: "/",
-        icons: [
-          {
-            src: "/icon-192x192.png",
-            sizes: "192x192",
-            type: "image/png",
-            purpose: "any maskable"
-          },
-          {
-            src: "/icon-512x512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "any maskable"
-          }
-        ],
-        shortcuts: [
-          {
-            name: "Book a Room",
-            short_name: "Book Room",
-            description: "Quickly book a hotel room",
-            url: "/rooms",
-            icons: [{ src: "/icon-192x192.png", sizes: "192x192" }]
-          },
-          {
-            name: "My Reservations",
-            short_name: "Reservations",
-            description: "View your room bookings",
-            url: "/dashboard/reservations",
-            icons: [{ src: "/icon-192x192.png", sizes: "192x192" }]
-          },
-          {
-            name: "Room Service",
-            short_name: "Room Service",
-            description: "Order food and services",
-            url: "/restaurant",
-            icons: [{ src: "/icon-192x192.png", sizes: "192x192" }]
-          }
-        ]
-      },
-      strategies: "injectManifest",
-      srcDir: "src",
-      filename: "sw.ts",
-      devOptions: {
-        enabled: false,
-        type: "module"
-      }
-    }),
+    // VitePWA({
+    //   registerType: "autoUpdate",
+    //   includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
+    //   manifest: {
+    //     name: "Fosuwa Papabi Hotel",
+    //     short_name: "Fosuwa Papabi",
+    //     description: "Luxury hotel booking and management system with offline capabilities",
+    //     theme_color: "#000000",
+    //     background_color: "#ffffff",
+    //     display: "standalone",
+    //     orientation: "portrait-primary",
+    //     scope: "/",
+    //     start_url: "/",
+    //     icons: [
+    //       {
+    //         src: "/icon-192x192.png",
+    //         sizes: "192x192",
+    //         type: "image/png",
+    //         purpose: "any maskable"
+    //       },
+    //       {
+    //         src: "/icon-512x512.png",
+    //         sizes: "512x512",
+    //         type: "image/png",
+    //         purpose: "any maskable"
+    //       }
+    //     ],
+    //     shortcuts: [
+    //       {
+    //         name: "Book a Room",
+    //         short_name: "Book Room",
+    //         description: "Quickly book a hotel room",
+    //         url: "/rooms",
+    //         icons: [{ src: "/icon-192x192.png", sizes: "192x192" }]
+    //       },
+    //       {
+    //         name: "My Reservations",
+    //         short_name: "Reservations",
+    //         description: "View your room bookings",
+    //         url: "/dashboard/reservations",
+    //         icons: [{ src: "/icon-192x192.png", sizes: "192x192" }]
+    //       },
+    //       {
+    //         name: "Room Service",
+    //         short_name: "Room Service",
+    //         description: "Order food and services",
+    //         url: "/restaurant",
+    //         icons: [{ src: "/icon-192x192.png", sizes: "192x192" }]
+    //       }
+    //     ]
+    //   },
+    //   strategies: "injectManifest",
+    //   srcDir: "src",
+    //   filename: "sw.ts",
+    //   devOptions: {
+    //     enabled: false,
+    //     type: "module"
+    //   }
+    // }),
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
       ? [
