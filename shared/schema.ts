@@ -2,6 +2,7 @@ import { pgTable, text, serial, integer, boolean, timestamp, decimal, date } fro
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
+import { InferSelectModel, InferInsertModel } from "drizzle-orm";
 
 // Users
 export const users = pgTable("users", {
@@ -111,3 +112,10 @@ export type Order = typeof orders.$inferSelect;
 export type InsertOrder = typeof orders.$inferInsert;
 export type OrderItem = typeof orderItems.$inferSelect;
 export type Message = typeof messages.$inferSelect;
+
+
+// Read type (from DB)
+// export type Room = InferSelectModel<typeof rooms>;
+
+// Insert type (what your API expects)
+export type InsertRoom = InferInsertModel<typeof rooms>;

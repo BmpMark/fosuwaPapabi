@@ -9,12 +9,22 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, Send } from "lucide-react";
+// Add useLocation to your wouter imports
+import { useLocation } from "wouter";
 
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const { user } = useAuth();
   const scrollRef = useRef<HTMLDivElement>(null);
+  // Inside ChatWidget() function:
+  const [location] = useLocation();
+
+useEffect(() => {
+  if (location === "/dashboard/room-service") {
+    setIsOpen(true);
+  }
+}, [location]);
 
   const { data: messages = [] } = useQuery<(Message & { sender?: { name: string } })[]>({
     queryKey: [api.chat.list.path],
