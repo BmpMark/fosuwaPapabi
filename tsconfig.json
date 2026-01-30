@@ -7,8 +7,8 @@
     },
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "node",
-    "outDir": "../dist",
+    "moduleResolution": "bundler",
+    "outDir": "dist",
     "rootDir": ".",
     "strict": true,
     "lib": ["esnext", "dom", "dom.iterable"],
@@ -16,40 +16,20 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
-    "noEmit": true,
-    "moduleResolution": "bundler",
+    "noEmit": false,
     "forceConsistentCasingInFileNames": true,
     "allowJs": true,
     "resolveJsonModule": true,
     "sourceMap": true,
     "incremental": true
   },
-  "include": ["./**/*.ts", "../shared/**/*.ts", "client/src/**/*", "server/**/*"],
-  "exclude": ["node_modules", "client/src/sw.ts"]
+  "include": [
+    "server/**/*",
+    "shared/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "client",
+    "dist"
+  ]
 }
-
-
-
-// {
-//   "include": ["client/src/**/*", "shared/**/*", "server/**/*"],
-//   "exclude": ["node_modules", "build", "dist", "**/*.test.ts"],
-//   "compilerOptions": {
-//     "incremental": true,
-//     "tsBuildInfoFile": "./node_modules/typescript/tsbuildinfo",
-//     "noEmit": true,
-//     "module": "ESNext",
-//     "strict": true,
-//     "lib": ["esnext", "dom", "dom.iterable"],
-//     "jsx": "preserve",
-//     "esModuleInterop": true,
-//     "skipLibCheck": true,
-//     "allowImportingTsExtensions": true,
-//     "moduleResolution": "bundler",
-//     "baseUrl": ".",
-//     "types": ["node", "vite/client"],
-//     "paths": {
-//       "@/*": ["./client/src/*"],
-//       "@shared/*": ["./shared/*"]
-//     }
-//   }
-// }

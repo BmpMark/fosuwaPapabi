@@ -5,121 +5,67 @@ import { useToast } from "@/hooks/use-toast";
 import { OfflineCache, NetworkUtils } from "@/lib/offline-utils";
 import { useOnline } from "@/hooks/use-online";
 import { useEffect } from "react";
+import { apiFetch } from "@/lib/api";
 
 export function useRestaurant() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { isOnline } = useOnline();
 
-  // Menu with offline caching
-  const menuQuery = useQuery({
+  const menuQuery = useQuery<MenuItem[]>({
     queryKey: [api.menu.list.path],
     queryFn: async () => {
       try {
-        // Try to fetch from network
-        const res = await fetch(api.menu.list.path);
-        if (!res.ok) throw new Error("Failed to fetch menu");
-
-        const data = api.menu.list.responses[200].parse(await res.json());
-
-        // Cache the data for offline use
+        const data = await apiFetch<MenuItem[]>(api.menu.list.path);
         await OfflineCache.cacheMenuItems(data);
-
         return data;
-      } catch (error) {
-        // If network fails, try to get cached data
-        console.log('Network failed, trying cached menu data');
+      } catch {
         const cached = await OfflineCache.getCachedMenuItems();
-        if (cached) {
-          return cached;
-        }
-        throw error;
+        if (cached) return cached;
+        throw new Error("Failed to fetch menu");
       }
     },
-    // Enable background refetching when coming back online
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
   });
 
-  // Cache menu data when it loads
   useEffect(() => {
-    if (menuQuery.data && menuQuery.data.length > 0 && isOnline) {
+    if (menuQuery.data && isOnline) {
       OfflineCache.cacheMenuItems(menuQuery.data);
     }
   }, [menuQuery.data, isOnline]);
 
-  const createMenuItemMutation = useMutation({
-    mutationFn: async (data: InsertMenuItem) => {
-      const res = await fetch(api.menu.create.path, {
-        method: api.menu.create.method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to create menu item");
-      return api.menu.create.responses[201].parse(await res.json());
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [api.menu.list.path] });
-      toast({ title: "Menu Item Added", description: "Item is now available." });
-    },
-  });
-
-  // Orders
-  const ordersQuery = useQuery({
+  const ordersQuery = useQuery<Order[]>({
     queryKey: [api.orders.list.path],
-    queryFn: async () => {
-      const res = await fetch(api.orders.list.path, { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to fetch orders");
-      return api.orders.list.responses[200].parse(await res.json());
-    },
+    queryFn: () => apiFetch<Order[]>(api.orders.list.path),
   });
 
   const createOrderMutation = useMutation({
     mutationFn: async (data: { order: InsertOrder; items: { menuItemId: number; quantity: number }[] }) => {
       if (NetworkUtils.isOnline()) {
-        // Online: Submit to server
-        const res = await fetch(api.orders.create.path, {
+        return apiFetch<Order>(api.orders.create.path, {
           method: api.orders.create.method,
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
-          credentials: "include",
         });
-        if (!res.ok) throw new Error("Failed to place order");
-        return api.orders.create.responses[201].parse(await res.json());
       } else {
-        // Offline: Store for background sync
-        const orderWithMeta = {
-          ...data,
-          timestamp: Date.now(),
-          offline: true,
-        };
-        await OfflineCache.storePendingOrder(orderWithMeta);
-        // Return a mock response for offline
-        return { id: Date.now(), ...data.order, status: 'pending', offline: true };
+        const offlineOrder = { ...data, timestamp: Date.now(), offline: true };
+        await OfflineCache.storePendingOrder(offlineOrder);
+        return { id: Date.now(), ...data.order, status: "pending", offline: true } as any;
       }
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (data: any) => {
       if (!data.offline) {
-        // Only invalidate and show toast for online orders
         queryClient.invalidateQueries({ queryKey: [api.orders.list.path] });
         toast({ title: "Order Placed", description: "Your order is being prepared." });
       }
-      // For offline orders, the success handling is done in the component
     },
   });
 
   const updateOrderStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
       const url = buildUrl(api.orders.updateStatus.path, { id });
-      const res = await fetch(url, {
+      return apiFetch<Order>(url, {
         method: api.orders.updateStatus.method,
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
-        credentials: "include",
       });
-      if (!res.ok) throw new Error("Failed to update status");
-      return api.orders.updateStatus.responses[200].parse(await res.json());
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.orders.list.path] });
@@ -130,12 +76,7 @@ export function useRestaurant() {
   const deleteMenuItemMutation = useMutation({
     mutationFn: async (id: number) => {
       const url = buildUrl(api.menu.delete.path, { id });
-      const res = await fetch(url, {
-        method: api.menu.delete.method,
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to delete menu item");
-      return api.menu.delete.responses[200].parse(await res.json());
+      return apiFetch(url, { method: api.menu.delete.method });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.menu.list.path] });
@@ -146,14 +87,10 @@ export function useRestaurant() {
   const updateMenuItemMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertMenuItem> }) => {
       const url = buildUrl(api.menu.update.path, { id });
-      const res = await fetch(url, {
+      return apiFetch<MenuItem>(url, {
         method: api.menu.update.method,
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
-        credentials: "include",
       });
-      if (!res.ok) throw new Error("Failed to update menu item");
-      return api.menu.update.responses[200].parse(await res.json());
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.menu.list.path] });
