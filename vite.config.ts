@@ -102,23 +102,14 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
-import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
-import { VitePWA } from "vite-plugin-pwa";
+import { fileURLToPath } from "url";
 
-// Conditionally import plugins without top-level await
-const replitPlugins = [];
-if (process.env.NODE_ENV !== "production" && process.env.REPL_ID !== undefined) {
-  const cartographer = require("@replit/vite-plugin-cartographer").cartographer;
-  const devBanner = require("@replit/vite-plugin-dev-banner").devBanner;
-  replitPlugins.push(cartographer(), devBanner());
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default defineConfig({
   plugins: [
     react(),
-    runtimeErrorOverlay(),
-    ...replitPlugins,
-    // Optionally uncomment VitePWA for production builds
   ],
   resolve: {
     alias: {
@@ -131,11 +122,5 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, "dist/public"),
     emptyOutDir: true,
-  },
-  server: {
-    fs: {
-      strict: true,
-      deny: ["**/.*"],
-    },
   },
 });
