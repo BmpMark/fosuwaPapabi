@@ -12,7 +12,7 @@ const app = express();
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://fosuwa-papabi.vercel.app"
+    "https://fosuwa-papabi-hotel.vercel.app"
   ],
   credentials: true
 }));
