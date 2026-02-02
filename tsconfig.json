@@ -16,7 +16,6 @@
     "jsx": "preserve",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "allowImportingTsExtensions": true,
     "noEmit": false,
     "forceConsistentCasingInFileNames": true,
     "allowJs": true,
