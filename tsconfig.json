@@ -7,8 +7,8 @@
       "@/*": ["client/src/*"]
     },
     "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "CommonJS",
+"moduleResolution": "Node",
     "outDir": "dist",
     "rootDir": ".",
     "strict": false,
