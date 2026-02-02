@@ -72,6 +72,21 @@ app.use((req, res, next) => {
   next();
 });
 
+
+const port = parseInt(process.env.PORT || "5000", 10);
+httpServer.listen(
+  {
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  },
+  () => {
+    log(`serving on port ${port}`);
+  },
+);
+
+
+
 (async () => {
   await registerRoutes(httpServer, app);
 
@@ -89,16 +104,4 @@ app.use((req, res, next) => {
     const { setupVite } = await import("./vite");
     await setupVite(httpServer, app);
   }
-
-  const port = parseInt(process.env.PORT || "5000", 10);
-  httpServer.listen(
-    {
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    },
-    () => {
-      log(`serving on port ${port}`);
-    },
-  );
 })();
