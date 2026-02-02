@@ -1,35 +1,19 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "types": ["node", "vite/client"],
     "paths": {
       "@shared/*": ["shared/*"],
       "@/*": ["client/src/*"]
     },
     "target": "ES2022",
-    "module": "CommonJS",
-"moduleResolution": "Node",
-    "outDir": "dist",
-    "rootDir": ".",
     "strict": false,
     "lib": ["esnext", "dom", "dom.iterable"],
     "jsx": "preserve",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "noEmit": false,
     "forceConsistentCasingInFileNames": true,
-    "allowJs": true,
     "resolveJsonModule": true,
     "sourceMap": true,
     "incremental": true
-  },
-  "include": [
-    "server/**/*",
-    "shared/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "client",
-    "dist"
-  ]
+  }
 }
