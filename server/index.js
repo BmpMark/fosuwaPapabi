@@ -75,6 +75,8 @@ app.use((req, res, next) => {
         host: "0.0.0.0",
         reusePort: true,
     }, () => {
-        log(`Server fully ready and listening on port ${port}`);
+        console.log(`Server listening on port ${port}`);
     });
 })();
+
+
