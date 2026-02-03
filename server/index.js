@@ -61,19 +61,20 @@ app.use((req, res, next) => {
         throw err;
     });
 
-    if (process.env.NODE_ENV === "production") {
-        serveStatic(app);
-    } else {
-        const { setupVite } = await import("./vite");
-        await setupVite(httpServer, app);
-    }
+    // if (process.env.NODE_ENV === "production") {
+    //     serveStatic(app);
+    //     }
+    // // } else {
+    //     const { setupVite } = await import("./vite");
+    //     await setupVite(httpServer, app);
+    // }
 
     // Now start the server
     const port = parseInt(process.env.PORT || "5000", 10);
     httpServer.listen({
         port,
         host: "0.0.0.0",
-        reusePort: true,
+        // reusePort: true,
     }, () => {
         console.log(`Server listening on port ${port}`);
     });
