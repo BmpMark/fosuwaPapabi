@@ -3,7 +3,6 @@ dotenv.config();
 import cors from "cors";
 import express from "express";
 import { registerRoutes } from "./routes";
-import { serveStatic } from "./static";
 import { createServer } from "http";
 const app = express();
 app.use(cors({
