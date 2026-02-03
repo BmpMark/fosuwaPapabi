@@ -120,7 +120,10 @@ export default defineConfig({
   },
   root: path.resolve(__dirname, "client"),
   build: {
-    outDir: "server/public",
+    outDir: path.resolve(__dirname, "server/public"), // <-- output directly where server expects it
     emptyOutDir: true,
-  },
+  },  
 });
+
+
+
