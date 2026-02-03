@@ -8,7 +8,7 @@
     "include": [
       "client/**/*",
       "vite.config.ts",
-      ["src"]
+      "shared/**/*"
     ]
   }
 
