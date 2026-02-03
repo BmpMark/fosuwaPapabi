@@ -108,9 +108,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig({
-  plugins: [
-    react(),
-  ],
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "client/src"),
@@ -120,10 +118,11 @@ export default defineConfig({
   },
   root: path.resolve(__dirname, "client"),
   build: {
-    outDir: path.resolve(__dirname, "server/public"), // <-- output directly where server expects it
+    outDir: path.resolve(__dirname, "server/public"), // ✅ this is key
     emptyOutDir: true,
-  },  
+  },
 });
+
 
 
 
