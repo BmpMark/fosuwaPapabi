@@ -5,10 +5,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { useAuth } from "@/hooks/use-auth";
+import React, { Suspense } from "react";
 
 import HomePage from "@/pages/home";
 import RoomsPage from "@/pages/rooms";
-import RestaurantPage from "@/pages/restaurant";
 import AuthPage from "@/pages/auth";
 import Dashboard from "@/pages/dashboard/index";
 import RoomService from "@/pages/dashboard/room-service";
@@ -20,6 +20,10 @@ import BillPage from "@/pages/dashboard/bill";
 import ReportsPage from "@/pages/dashboard/reports";
 import NotFound from "@/pages/not-found";
 import OfflinePage from "@/pages/offline";
+
+// Lazy load RestaurantPage
+const RestaurantPage = React.lazy(() => import("@/pages/restaurant"));
+import Loading from "@/components/Loading";
 
 function PrivateRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useAuth();
@@ -54,7 +58,14 @@ function Router() {
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/rooms" component={RoomsPage} />
-      <Route path="/restaurant" component={RestaurantPage} />
+      
+      {/* Wrap lazy-loaded RestaurantPage in Suspense */}
+      <Route path="/restaurant">
+        <Suspense fallback={<Loading />}>
+          <RestaurantPage />
+        </Suspense>
+      </Route>
+
       <Route path="/login" component={AuthPage} />
       
       {/* Dashboard Routes */}
