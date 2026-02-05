@@ -17,6 +17,17 @@ app.use(
 );
 
 
+app.use(session({
+  secret: process.env.SESSION_SECRET!,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    sameSite: "none",
+    secure: true,
+  },
+}));
+
+
 // -------------------- Raw Body --------------------
 declare module "http" {
   interface IncomingMessage {

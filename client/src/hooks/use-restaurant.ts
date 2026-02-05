@@ -38,6 +38,19 @@ export function useRestaurant() {
     queryFn: () => apiFetch<Order[]>(api.orders.list.path),
   });
 
+  const createMenuItemMutation = useMutation({
+    mutationFn: async (data: InsertMenuItem) => {
+      return apiFetch<MenuItem>(api.menu.create.path, {
+        method: api.menu.create.method,
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.menu.list.path] });
+      toast({ title: "Menu Item Created", description: "Item added to menu." });
+    },
+  });
+  
   const createOrderMutation = useMutation({
     mutationFn: async (data: { order: InsertOrder; items: { menuItemId: number; quantity: number }[] }) => {
       if (NetworkUtils.isOnline()) {
