@@ -50,16 +50,17 @@ app.use(
 );
 app.use(express.urlencoded({ extended: false }));
 
-// -------------------- Logging --------------------
-function log(message: string, source = "express") {
-  const formattedTime = new Date().toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-  });
-  console.log(`${formattedTime} [${source}] ${message}`);
-}
+//Logging
+export function log(message: string, source = "express") {
+    const formattedTime = new Date().toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    });
+    console.log(`${formattedTime} [${source}] ${message}`);
+  }
+
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -86,6 +87,20 @@ app.use((req, res, next) => {
   next();
 });
 
+// -------------------- Start Server --------------------
+const port = parseInt(process.env.PORT || "5000", 10);
+const httpServer = createServer(app);
+
+httpServer.listen(
+  {
+    port,
+    host: "0.0.0.0",
+  },
+  () => {
+    log(`API server listening on port ${port}`);
+  }
+);
+
 // -------------------- Register Routes --------------------
 (async () => {
   await registerRoutes(app);
@@ -97,18 +112,6 @@ app.use((req, res, next) => {
     res.status(status).json({ message });
     throw err;
   });
-
-  // -------------------- Start Server --------------------
-  const port = parseInt(process.env.PORT || "5000", 10);
-  const httpServer = createServer(app);
-
-  httpServer.listen(
-    {
-      port,
-      host: "0.0.0.0",
-    },
-    () => {
-      log(`API server listening on port ${port}`);
-    }
-  );
 })();
+
+  
