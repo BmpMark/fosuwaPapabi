@@ -3,30 +3,36 @@ dotenv.config();
 
 import cors from "cors";
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
+import session from "express-session";
 import { createServer } from "http";
+import { registerRoutes } from "./routes";
 
+// -------------------- App --------------------
 const app = express();
 
 // -------------------- CORS --------------------
 app.use(
   cors({
-    origin: ["https://fosuwa-papabi-hotel.vercel.app"], // frontend URL
-    credentials: true, // send cookies
+    origin: ["https://fosuwa-papabi-hotel.vercel.app"], // Vercel frontend
+    credentials: true,
   })
 );
 
-
-app.use(session({
-  secret: process.env.SESSION_SECRET!,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    sameSite: "none",
-    secure: true,
-  },
-}));
-
+// -------------------- Session --------------------
+app.use(
+  session({
+    name: "fosuwa.sid",
+    secret: process.env.SESSION_SECRET!,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: true,        // required on HTTPS (Render + Vercel)
+      sameSite: "none",    // required for cross-site cookies
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    },
+  })
+);
 
 // -------------------- Raw Body --------------------
 declare module "http" {
@@ -38,14 +44,14 @@ declare module "http" {
 app.use(
   express.json({
     verify: (req, _res, buf) => {
-      req.rawBody = buf;
+      (req as any).rawBody = buf;
     },
   })
 );
 app.use(express.urlencoded({ extended: false }));
 
 // -------------------- Logging --------------------
-export function log(message: string, source = "express") {
+function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
@@ -80,27 +86,29 @@ app.use((req, res, next) => {
   next();
 });
 
-// -------------------- HTTP Server --------------------
-const port = parseInt(process.env.PORT || "5000", 10);
-const httpServer = createServer(app);
-httpServer.listen(
-  {
-    port,
-    host: "0.0.0.0",
-  },
-  () => {
-    log(`API server listening on port ${port}`);
-  }
-);
-
-// -------------------- Register Routes & Error Handling --------------------
+// -------------------- Register Routes --------------------
 (async () => {
   await registerRoutes(app);
 
+  // Error handler
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
     res.status(status).json({ message });
     throw err;
   });
+
+  // -------------------- Start Server --------------------
+  const port = parseInt(process.env.PORT || "5000", 10);
+  const httpServer = createServer(app);
+
+  httpServer.listen(
+    {
+      port,
+      host: "0.0.0.0",
+    },
+    () => {
+      log(`API server listening on port ${port}`);
+    }
+  );
 })();
