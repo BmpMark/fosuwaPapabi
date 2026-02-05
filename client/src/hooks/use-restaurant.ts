@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
-import { type MenuItem, type InsertMenuItem, type Order, type InsertOrder } from "@shared/schema";
+import type { MenuItem, InsertMenuItem, Order, InsertOrder } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { OfflineCache, NetworkUtils } from "@/lib/offline-utils";
 import { useOnline } from "@/hooks/use-online";
@@ -47,10 +47,10 @@ export function useRestaurant() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.menu.list.path] });
-      toast({ title: "Menu Item Created", description: "Item added to menu." });
+      toast({ title: "Menu Item Created", description: "Item added successfully." });
     },
   });
-  
+
   const createOrderMutation = useMutation({
     mutationFn: async (data: { order: InsertOrder; items: { menuItemId: number; quantity: number }[] }) => {
       if (NetworkUtils.isOnline()) {
