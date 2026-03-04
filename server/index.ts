@@ -5,7 +5,7 @@ import cors from "cors";
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { createServer } from "http";
-import { registerRoutes } from "./routes";
+import { registerRoutes } from "./routes.js";
 
 // -------------------- App --------------------
 const app = express();
@@ -103,7 +103,8 @@ httpServer.listen(
 
 // -------------------- Register Routes --------------------
 (async () => {
-  await registerRoutes(app);
+  await registerRoutes(httpServer, app);
+
 
   // Error handler
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

@@ -1,5 +1,112 @@
+// import express, { Request, Response } from "express";
+// import bcrypt from "bcryptjs";
+// import * as storage from "../server/storage.js";
+
+
+// import {
+//   insertUserSchema,
+//   insertRoomSchema,
+//   insertReservationSchema,
+//   insertMenuItemSchema,
+//   insertOrderSchema,
+//   insertOrderItemSchema,
+//   insertMessageSchema,
+//   users, rooms, orders, messages
+// } from "../shared/schema.js";
+
+// const router = express.Router();
+
+// // ------------------- User Routes -------------------
+// router.post("/users", async (req: Request, res: Response) => {
+//   try {
+//     const parsed = insertUserSchema.parse(req.body);
+//     const hashedPassword = await bcrypt.hash(parsed.password, 10);
+//     const user = await storage.createUser({ ...parsed, password: hashedPassword });
+//     res.status(201).json(user);
+//   } catch (err) {
+//     res.status(400).json({ error: (err as Error).message });
+//   }
+// });
+
+// // ------------------- Room Routes -------------------
+// router.post("/rooms", async (req: Request, res: Response) => {
+//   try {
+//     const room = insertRoomSchema.parse(req.body);
+//     const newRoom = await storage.createRoom(room);
+//     res.status(201).json(newRoom);
+//   } catch (err) {
+//     res.status(400).json({ error: (err as Error).message });
+//   }
+// });
+
+// // ------------------- Reservation Routes -------------------
+// router.post("/reservations", async (req: Request, res: Response) => {
+//   try {
+//     const reservation = insertReservationSchema.parse(req.body);
+//     const newReservation = await storage.createReservation(reservation);
+//     res.status(201).json(newReservation);
+//   } catch (err) {
+//     res.status(400).json({ error: (err as Error).message });
+//   }
+// });
+
+// // ------------------- MenuItem Routes -------------------
+// router.post("/menu-items", async (req: Request, res: Response) => {
+//   try {
+//     const item = insertMenuItemSchema.parse(req.body);
+//     const newItem = await storage.createMenuItem(item);
+//     res.status(201).json(newItem);
+//   } catch (err) {
+//     res.status(400).json({ error: (err as Error).message });
+//   }
+// });
+
+// // ------------------- Order Routes -------------------
+// router.post("/orders", async (req: Request, res: Response) => {
+//   try {
+//     const order = insertOrderSchema.parse(req.body);
+//     const newOrder = await storage.createOrder(order);
+//     res.status(201).json(newOrder);
+//   } catch (err) {
+//     res.status(400).json({ error: (err as Error).message });
+//   }
+// });
+
+// // ------------------- OrderItem Routes -------------------
+// router.post("/order-items", async (req: Request, res: Response) => {
+//   try {
+//     const orderItem = insertOrderItemSchema.parse(req.body);
+//     const newOrderItem = await storage.createOrderItem(orderItem);
+//     res.status(201).json(newOrderItem);
+//   } catch (err) {
+//     res.status(400).json({ error: (err as Error).message });
+//   }
+// });
+
+// // ------------------- Message Routes -------------------
+// router.post("/messages", async (req: Request, res: Response) => {
+//   try {
+//     const user = (req as any).user as { id: number; role: string };
+
+//     const parsed = insertMessageSchema.parse({
+//       ...req.body,
+//       senderId: user.id,
+//       isAdmin: user.role !== "guest",
+//     });
+
+//     const newMessage = await storage.createMessage(parsed);
+//     res.status(201).json(newMessage);
+//   } catch (err) {
+//     res.status(400).json({ error: (err as Error).message });
+//   }
+// });
+
+// export const api = router;
+
+
 import { z } from 'zod';
-import { insertUserSchema, insertRoomSchema, insertReservationSchema, insertMenuItemSchema, insertOrderSchema, insertOrderItemSchema, users, rooms, reservations, menuItems, orders, messages } from './schema';
+import { insertUserSchema, insertRoomSchema, insertReservationSchema, insertMenuItemSchema, insertOrderSchema, insertOrderItemSchema, users, rooms, reservations, menuItems, orders, messages } from './schema.js';
+
 
 export const errorSchemas = {
   validation: z.object({
@@ -169,6 +276,7 @@ export const api = {
     create: {
       method: 'POST' as const,
       path: '/api/orders',
+      // Wrap the schema to help TypeScript's inference engine
       input: z.object({
         order: insertOrderSchema,
         items: z.array(z.object({ menuItemId: z.number(), quantity: z.number() })),

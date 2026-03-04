@@ -1,5 +1,6 @@
 // // Enhanced Service Worker for Fosua Papabi Hotel PWA
 // // Handles offline functionality, intelligent caching, and background sync
+export {};
 // /// <reference lib="webworker" />
 // declare const self: ServiceWorkerGlobalScope;
 // // Cache names

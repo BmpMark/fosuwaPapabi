@@ -1,11 +1,24 @@
 import type { Express } from "express";
 import type { Server } from "http";
-import { storage } from "./storage";
-import { setupAuth } from "./auth";
-import { api } from "@shared/routes";
+import { storage } from "./storage.js";
+import { setupAuth } from "./auth.js";
+import { api } from "@shared/routes.js";
 import { z } from "zod";
-import { sendBookingNotification, sendOrderNotification } from "./email";
-import { menuItems, rooms } from "@shared/schema";
+import { sendBookingNotification, sendOrderNotification } from "./email.js";
+import {
+  menuItems,
+  rooms,
+  insertRoomSchema,
+  insertReservationSchema,
+  insertMenuItemSchema,
+  insertOrderSchema,
+} from "@shared/schema.js";
+import type {
+  InsertRoom,
+  InsertReservation,
+  InsertMenuItem,
+  InsertOrder,
+} from "@shared/schema.js";
 import { eq, sql } from "drizzle-orm";
 
 export async function registerRoutes(
@@ -28,12 +41,12 @@ export async function registerRoutes(
 
   app.post(api.rooms.create.path, async (req, res) => {
     try {
-      const input = api.rooms.create.input.parse(req.body);
-      const room = await storage.createRoom(input);
+      const input = insertRoomSchema.parse(req.body) as unknown as InsertRoom;
+      const room = await storage.createRoom(input) as typeof rooms.$inferSelect;
       res.status(201).json(room);
     } catch (err) {
       if (err instanceof z.ZodError) {
-        res.status(400).json({ message: err.errors[0].message });
+        res.status(400).json({ message: err.issues[0].message });
       } else {
         res.status(500).json({ message: "Internal server error" });
       }
@@ -61,7 +74,7 @@ export async function registerRoutes(
 
   app.post(api.reservations.create.path, async (req, res) => {
     try {
-      const input = api.reservations.create.input.parse(req.body);
+      const input = insertReservationSchema.parse(req.body) as unknown as InsertReservation;
       const reservation = await storage.createReservation(input);
       
       // Send notification
@@ -80,7 +93,7 @@ export async function registerRoutes(
       res.status(201).json(reservation);
     } catch (err) {
        if (err instanceof z.ZodError) {
-        res.status(400).json({ message: err.errors[0].message });
+        res.status(400).json({ message: err.issues[0].message });
       } else {
         res.status(500).json({ message: "Internal server error" });
       }
@@ -100,7 +113,7 @@ export async function registerRoutes(
   });
 
   app.post(api.menu.create.path, async (req, res) => {
-    const input = api.menu.create.input.parse(req.body);
+    const input = insertMenuItemSchema.parse(req.body) as unknown as InsertMenuItem;
     const item = await storage.createMenuItem(input);
     res.status(201).json(item);
   });
@@ -125,15 +138,21 @@ export async function registerRoutes(
   });
 
   app.post(api.orders.create.path, async (req, res) => {
-    const { order, items } = req.body;
-    // Basic validation manual for nested structure
-    const newOrder = await storage.createOrder(order, items);
-    
-    // Send notification
     try {
-      const menuItems = await storage.getMenuItems();
-      const orderItems = items.map((item: any) => {
-        const menuItem = menuItems.find(mi => mi.id === item.menuItemId);
+      const input = z
+        .object({
+          order: insertOrderSchema,
+          items: z.array(z.object({ menuItemId: z.number(), quantity: z.number() })),
+        })
+        .parse(req.body);
+      const { order, items } = input;
+
+      const newOrder = await storage.createOrder(order as unknown as InsertOrder, items);
+      
+      // Send notification
+      const mItems = await storage.getMenuItems();
+      const orderNotificationItems = items.map((item) => {
+        const menuItem = mItems.find(mi => mi.id === item.menuItemId);
         return {
           name: menuItem?.name || "Unknown Item",
           quantity: item.quantity
@@ -144,13 +163,17 @@ export async function registerRoutes(
         orderId: newOrder.id,
         type: newOrder.type,
         totalAmount: newOrder.totalAmount,
-        items: orderItems,
+        items: orderNotificationItems,
       });
-    } catch (error) {
-      console.error("Failed to trigger order notification:", error);
-    }
 
-    res.status(201).json(newOrder);
+      res.status(201).json(newOrder);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        res.status(400).json({ message: err.issues[0].message });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
   });
 
   app.patch(api.orders.updateStatus.path, async (req, res) => {

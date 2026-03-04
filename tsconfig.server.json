@@ -1,18 +1,42 @@
-{
-    "extends": "./tsconfig.json",
-    "compilerOptions": {
-      "module": "CommonJS",
-      "moduleResolution": "Node",
-      "outDir": "dist",
-      "noEmit": false
-    },
-    "include": [
-      "server/**/*",
-      "shared/**/*"
-    ],
-    "exclude": [
-      "client",
-      "vite.config.ts"
-    ]
-  }
+// {
+//     "extends": "./tsconfig.json",
+//     "compilerOptions": {
+//       "module": "NodeNext",
+//       "moduleResolution": "Node",
+//       "outDir": "dist",
+//       "noEmit": false
+//     },
+//     "include": [
+//       "server/**/*",
+//       "shared/**/*"
+//     ],
+//     "exclude": [
+//       "client",
+//       "vite.config.ts"
+//     ]
+//   }
   
+
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["shared/*"]
+    },
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "dist",
+    "noEmit": false,
+    "allowImportingTsExtensions": false,
+    "types": ["node"]
+  },
+  "include": [
+    "server/**/*",
+    "shared/**/*"
+  ],
+  "exclude": [
+    "client",
+    "vite.config.ts"
+  ]
+}
