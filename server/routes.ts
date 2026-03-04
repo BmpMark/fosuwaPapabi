@@ -54,7 +54,7 @@ export async function registerRoutes(
   });
 
   app.put(api.rooms.update.path, async (req, res) => {
-    const input = api.rooms.update.input.parse(req.body);
+    const input = insertRoomSchema.partial().parse(req.body) as unknown as Partial<InsertRoom>;
     const room = await storage.updateRoom(Number(req.params.id), input);
     if (!room) return res.status(404).json({ message: "Room not found" });
     res.json(room);
@@ -125,7 +125,7 @@ export async function registerRoutes(
   });
 
   app.put(api.menu.update.path, async (req, res) => {
-    const input = api.menu.update.input.parse(req.body);
+    const input = insertMenuItemSchema.partial().parse(req.body) as unknown as Partial<InsertMenuItem>;
     const item = await storage.updateMenuItem(Number(req.params.id), input);
     if (!item) return res.status(404).json({ message: "Menu item not found" });
     res.json(item);
@@ -147,7 +147,10 @@ export async function registerRoutes(
         .parse(req.body);
       const { order, items } = input;
 
-      const newOrder = await storage.createOrder(order as unknown as InsertOrder, items);
+      const newOrder = await storage.createOrder(
+        order as unknown as InsertOrder,
+        items as { menuItemId: number; quantity: number }[]
+      );
       
       // Send notification
       const mItems = await storage.getMenuItems();

@@ -278,7 +278,7 @@ export const api = {
       path: '/api/orders',
       // Wrap the schema to help TypeScript's inference engine
       input: z.object({
-        order: insertOrderSchema,
+        order: insertOrderSchema as any,
         items: z.array(z.object({ menuItemId: z.number(), quantity: z.number() })),
       }),
       responses: {
