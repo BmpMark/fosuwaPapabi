@@ -2,7 +2,7 @@ import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage.js";
 import { setupAuth } from "./auth.js";
-import { api } from "@shared/routes.js";
+import { api } from "../shared/routes.js";
 import { z } from "zod";
 import { sendBookingNotification, sendOrderNotification } from "./email.js";
 import {
@@ -12,13 +12,13 @@ import {
   insertReservationSchema,
   insertMenuItemSchema,
   insertOrderSchema,
-} from "@shared/schema.js";
+} from "../shared/schema.js";
 import type {
   InsertRoom,
   InsertReservation,
   InsertMenuItem,
   InsertOrder,
-} from "@shared/schema.js";
+} from "../shared/schema.js";
 import { eq, sql } from "drizzle-orm";
 
 export async function registerRoutes(
