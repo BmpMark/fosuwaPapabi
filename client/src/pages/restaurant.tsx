@@ -163,9 +163,10 @@ export default function RestaurantPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 md:-mt-12 relative z-20">
+{/* temporarily commenting out the slideshow to see if the page loads faster */}
+      {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 md:-mt-12 relative z-20">
         <FoodSlideshow />
-      </div>
+      </div> */}
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <Tabs defaultValue={categories[0]} className="w-full">
