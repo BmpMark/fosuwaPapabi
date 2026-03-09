@@ -155,7 +155,7 @@ export default function RestaurantPage() {
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           <h1 className="font-display text-4xl md:text-6xl font-bold mb-4">
-            Fosuwa Special
+            Fosua Special
           </h1>
           <p className="text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto font-light">
             A culinary experience curated with passion and local ingredients.
@@ -163,10 +163,9 @@ export default function RestaurantPage() {
         </div>
       </div>
 
-{/* temporarily commenting out the slideshow to see if the page loads faster */}
-      {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 md:-mt-12 relative z-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 md:-mt-12 relative z-20">
         <FoodSlideshow />
-      </div> */}
+      </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <Tabs defaultValue={categories[0]} className="w-full">

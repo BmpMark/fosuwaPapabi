@@ -49,7 +49,7 @@ export function Navbar() {
                 F
               </div>
               <span className="font-display font-bold text-2xl tracking-tight text-primary">
-                Fosuwa Papabi
+                Fosua Papabi
               </span>
             </div>
           </Link>
@@ -194,7 +194,7 @@ export function Footer() {
     <footer className="bg-primary text-primary-foreground py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-12">
         <div className="space-y-4">
-          <h3 className="font-display text-2xl font-bold">Fosuwa Papabi</h3>
+          <h3 className="font-display text-2xl font-bold">Fosua Papabi</h3>
           <p className="text-primary-foreground/70 leading-relaxed">
             Experience luxury and comfort in the heart of the town. A unique
             hotel designed for memories.
@@ -205,6 +205,7 @@ export function Footer() {
           <ul className="space-y-2 text-primary-foreground/70">
             <li>Kwafokrom, Nsawam-Kumasi road</li>
             <li>+233 54 845 7017</li>
+            <li>+233 59 328 3934</li>
           </ul>
         </div>
         <div>
