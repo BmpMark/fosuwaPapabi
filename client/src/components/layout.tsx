@@ -130,7 +130,7 @@ export function Navbar() {
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px]">
                 <SheetHeader>
-                  <SheetTitle className="text-left font-display text-2xl">Fosuwa Papabi</SheetTitle>
+                  <SheetTitle className="text-left font-display text-2xl">Fosua Papabi</SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col gap-4 mt-8">
                   {links.map((link) => (
@@ -225,7 +225,7 @@ export function Footer() {
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-4 mt-16 pt-8 border-t border-primary-foreground/10 text-center text-primary-foreground/50 text-sm">
-        © 2026 Fosuwa Papabi Hotel. All rights reserved.
+        © 2026 Fosua Papabi Hotel. All rights reserved.
       </div>
     </footer>
   );
