@@ -215,14 +215,41 @@ export function Footer() {
             <li><Link href="/restaurant" className="hover:text-white transition">Dining</Link></li>
           </ul>
         </div>
-        <div>
+        {/* <div>
           <h4 className="font-bold mb-4 uppercase tracking-wider text-sm">Social</h4>
           <ul className="space-y-2 text-primary-foreground/70">
             <li>Instagram</li>
             <li>Twitter</li>
             <li>Facebook</li>
           </ul>
-        </div>
+        </div> */}
+
+
+         <div>
+  <h4 className="font-bold mb-4 uppercase tracking-wider text-sm">Social</h4>
+  <ul className="space-y-2 text-primary-foreground/70">
+    <li>
+      <a 
+        href="https://www.tiktok.com/@fosua.papabi.hote2?_r=1&_t=ZS-94a7I0fEJuC" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="hover:text-white transition"
+      >
+        Tiktok
+      </a>
+    </li>
+    <li>
+      <a 
+        href="https://www.facebook.com/profile.php?id=61556007832192" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="hover:text-white transition"
+      >
+        Facebook
+      </a>
+    </li>
+  </ul>
+</div>
       </div>
       <div className="max-w-7xl mx-auto px-4 mt-16 pt-8 border-t border-primary-foreground/10 text-center text-primary-foreground/50 text-sm">
         © 2026 Fosua Papabi Hotel. All rights reserved.
