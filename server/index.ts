@@ -11,9 +11,25 @@ import { registerRoutes } from "./routes.js";
 const app = express();
 
 // -------------------- CORS --------------------
+// app.use(
+//   cors({
+//     origin: ["https://fosuapapabihotel.vercel.app"], // Vercel frontend
+//     credentials: true,
+//   })
+// );
+
 app.use(
   cors({
-    origin: ["https://fosuapapabihotel.vercel.app"], // Vercel frontend
+    origin: function (origin, callback) {
+      if (
+        !origin ||
+        origin.includes("vercel.app") // ✅ allow all vercel deployments
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
