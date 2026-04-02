@@ -13,7 +13,7 @@ const app = express();
 // -------------------- CORS --------------------
 app.use(
   cors({
-    origin: ["https://fosuwa-papabi-hotel.vercel.app"], // Vercel frontend
+    origin: ["https://fosuapapabihotel.vercel.app"], // Vercel frontend
     credentials: true,
   })
 );
