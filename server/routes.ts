@@ -241,8 +241,8 @@ export async function registerRoutes(
       console.log("[seed] Syncing room prices...");
       await storage.db.execute(sql`
         UPDATE rooms SET price = CASE 
-          WHEN type = 'standard' THEN 300 
-          WHEN type = 'executive' THEN 500 
+          WHEN type = 'standard' THEN 400 
+          WHEN type = 'executive' THEN 600 
           WHEN type = 'apartment' THEN 600 
           ELSE price 
         END
