@@ -246,6 +246,34 @@ export class DatabaseStorage implements IStorage {
     return reservationsWithUsers;
   }
 
+  async updateReservationPayment(id: number, data: { paymentIntentId?: string; paymentStatus?: string }) {
+    const [updated] = await db
+      .update(reservations)
+      .set(data)
+      .where(eq(reservations.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async updateOrderPayment(id: number, data: { paymentIntentId?: string; paymentStatus?: string }) {
+    const [updated] = await db
+      .update(orders)
+      .set(data)
+      .where(eq(orders.id, id))
+      .returning();
+    return updated;
+  }
+  
+  async getOrder(id: number) {
+    const [order] = await db.select().from(orders).where(eq(orders.id, id));
+    return order;
+  }
+  
+  async getReservation(id: number) {
+    const [reservation] = await db.select().from(reservations).where(eq(reservations.id, id));
+    return reservation;
+  }
+  
   async createReservation(reservation: typeof reservations.$inferInsert): Promise<Reservation> {
     // Prevent double booking
     const existing = await db.select().from(reservations).where(

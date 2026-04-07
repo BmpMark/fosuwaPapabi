@@ -50,7 +50,15 @@
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
+// Wrap your <App /> with:
 
 // No service worker registration in production or development
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(<Elements stripe={stripePromise}>
+    <App />
+  </Elements>);

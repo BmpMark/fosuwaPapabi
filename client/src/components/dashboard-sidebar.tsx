@@ -20,6 +20,7 @@ export function DashboardSidebar() {
   if (!user) return null;
 
   const isAdmin = user.role === "admin" || user.role === "staff" || user.role === "manager";
+  const isManager = user.role === "manager";
 
   const guestLinks = [
     { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -35,6 +36,7 @@ export function DashboardSidebar() {
     { href: "/dashboard/menu", label: "Menu Items", icon: ClipboardList },
     { href: "/dashboard/kitchen", label: "Kitchen Orders", icon: Utensils },
     { href: "/dashboard/reports", label: "Reports", icon: BarChart3 },
+    ...(isManager ? [{ href: "/dashboard/reports", label: "Reports", icon: BarChart3 }] : []),
   ];
 
   const links = isAdmin ? adminLinks : guestLinks;

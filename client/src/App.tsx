@@ -49,6 +49,16 @@ function AdminRoute({ component: Component }: { component: React.ComponentType }
     setLocation("/dashboard");
     return null;
   }
+  return <Component />;
+}
+function ManagerRoute({ component: Component }: { component: React.ComponentType }) {
+  const { user, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
+  if (isLoading) return null;
+  if (!user || user.role !== "manager") {
+    setLocation("/dashboard");
+    return null;
+  }
 
   return <Component />;
 }
@@ -88,7 +98,7 @@ function Router() {
         <AdminRoute component={KitchenOrdersPage} />
       </Route>
       <Route path="/dashboard/reports">
-        <AdminRoute component={ReportsPage} />
+      <ManagerRoute component={ReportsPage} />
       </Route>
       <Route path="/dashboard/bill">
         <PrivateRoute component={BillPage} />
