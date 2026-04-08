@@ -4,26 +4,13 @@ import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db.js";
 import {
-  users,
-  rooms,
-  reservations,
-  menuItems,
-  orders,
-  orderItems,
-  messages,
-  notifications,
+  users, rooms, reservations, menuItems, orders,
+  orderItems, messages, notifications, housekeepingTasks, maintenanceRequests,
+  type User, type InsertUser, type Room, type Reservation,
+  type MenuItem, type Order, type OrderItem, type Message,
+  type Notification, type HousekeepingTask, type MaintenanceRequest,
 } from "../shared/schema.js";
 
-import type {
-  User,
-  InsertUser,
-  Room,
-  Reservation,
-  MenuItem,
-  Order,
-  Message,
-  Notification,
-} from "../shared/schema.js";
 
 const PostgresSessionStore = connectPg(session);
 
@@ -65,6 +52,16 @@ export interface IStorage {
   createNotification(notification: typeof notifications.$inferInsert): Promise<Notification>;
   markNotificationRead(id: number): Promise<Notification | undefined>;
   markAllNotificationsRead(): Promise<void>;
+
+  // Housekeeping
+getHousekeepingTasks(): Promise<HousekeepingTask[]>;
+upsertHousekeepingTask(roomId: number, data: Partial<typeof housekeepingTasks.$inferInsert>): Promise<HousekeepingTask>;
+
+// Maintenance
+getMaintenanceRequests(): Promise<MaintenanceRequest[]>;
+getMaintenanceRequestsByUser(userId: number): Promise<MaintenanceRequest[]>;
+createMaintenanceRequest(data: typeof maintenanceRequests.$inferInsert): Promise<MaintenanceRequest>;
+updateMaintenanceRequest(id: number, updates: Partial<typeof maintenanceRequests.$inferInsert>): Promise<MaintenanceRequest | undefined>;
 
   sessionStore: session.Store;
 }
@@ -255,6 +252,73 @@ export class DatabaseStorage implements IStorage {
       return newOrder;
     });
   }
+
+  // ── Housekeeping ─────────────────────────────────────────────────────────────
+
+async getHousekeepingTasks(): Promise<HousekeepingTask[]> {
+  return await db.select().from(housekeepingTasks).orderBy(housekeepingTasks.updatedAt);
+}
+
+async upsertHousekeepingTask(
+  roomId: number,
+  data: Partial<typeof housekeepingTasks.$inferInsert>
+): Promise<HousekeepingTask> {
+  const existing = await db
+    .select()
+    .from(housekeepingTasks)
+    .where(eq(housekeepingTasks.roomId, roomId));
+
+  if (existing.length > 0) {
+    const [updated] = await db
+      .update(housekeepingTasks)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(housekeepingTasks.roomId, roomId))
+      .returning();
+    return updated;
+  } else {
+    const [created] = await db
+      .insert(housekeepingTasks)
+      .values({ roomId, ...data, updatedAt: new Date() })
+      .returning();
+    return created;
+  }
+}
+
+// ── Maintenance ───────────────────────────────────────────────────────────────
+
+async getMaintenanceRequests(): Promise<MaintenanceRequest[]> {
+  return await db
+    .select()
+    .from(maintenanceRequests)
+    .orderBy(maintenanceRequests.createdAt);
+}
+
+async getMaintenanceRequestsByUser(userId: number): Promise<MaintenanceRequest[]> {
+  return await db
+    .select()
+    .from(maintenanceRequests)
+    .where(eq(maintenanceRequests.reportedById, userId))
+    .orderBy(maintenanceRequests.createdAt);
+}
+
+async createMaintenanceRequest(
+  data: typeof maintenanceRequests.$inferInsert
+): Promise<MaintenanceRequest> {
+  const [created] = await db.insert(maintenanceRequests).values(data).returning();
+  return created;
+}
+
+async updateMaintenanceRequest(
+  id: number,
+  updates: Partial<typeof maintenanceRequests.$inferInsert>
+): Promise<MaintenanceRequest | undefined> {
+  const [updated] = await db
+    .update(maintenanceRequests)
+    .set(updates)
+    .where(eq(maintenanceRequests.id, id))
+    .returning();
+  return updated;
+}
 
   async updateOrderStatus(id: number, status: OrderStatus): Promise<Order | undefined> {
     const [updated] = await db

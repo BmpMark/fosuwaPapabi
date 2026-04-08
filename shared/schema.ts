@@ -156,6 +156,54 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
   createdAt: true,
 });
 
+
+// Housekeeping Tasks — one record per room, upserted on status changes
+export const housekeepingTasks = pgTable("housekeeping_tasks", {
+  id: serial("id").primaryKey(),
+  roomId: integer("room_id").notNull().unique(), // one active task per room
+  status: text("status").notNull().default("clean"), // clean | dirty | in_progress | inspected
+  assignedTo: integer("assigned_to"),              // staff user id
+  notes: text("notes"),
+  scheduledFor: date("scheduled_for"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertHousekeepingTaskSchema = createInsertSchema(housekeepingTasks)
+  .extend({ id: z.undefined(), updatedAt: z.undefined() })
+  .omit({ id: true, updatedAt: true });
+
+export type HousekeepingTask = typeof housekeepingTasks.$inferSelect;
+export type InsertHousekeepingTask = typeof housekeepingTasks.$inferInsert;
+
+// Maintenance Requests
+export const maintenanceRequests = pgTable("maintenance_requests", {
+  id: serial("id").primaryKey(),
+  roomId: integer("room_id"),                      // nullable — covers common areas too
+  reportedById: integer("reported_by_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  priority: text("priority").notNull().default("medium"), // low | medium | high | urgent
+  status: text("status").notNull().default("open"),       // open | in_progress | resolved
+  assignedTo: integer("assigned_to"),
+  notes: text("notes"),                            // resolution / progress notes
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// export const insertMaintenanceRequestSchema = createInsertSchema(maintenanceRequests)
+//   .extend({ id: z.undefined(), createdAt: z.undefined(), resolvedAt: z.undefined() })
+//   .omit({ id: true, createdAt: true, resolvedAt: true });
+
+export const insertMaintenanceRequestSchema = createInsertSchema(maintenanceRequests)
+  .omit({ id: true, createdAt: true, resolvedAt: true })
+  .extend({
+    title: z.string().min(1, "Title is required"),
+    description: z.string().min(1, "Description is required"),
+    reportedById: z.number().optional(), // you'll override it anyway
+  });
+
+export type MaintenanceRequest = typeof maintenanceRequests.$inferSelect;
+export type InsertMaintenanceRequest = typeof maintenanceRequests.$inferInsert;
 /* ===================== TYPES ===================== */
 
 export type Notification = typeof notifications.$inferSelect;

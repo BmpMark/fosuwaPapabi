@@ -5,12 +5,6 @@ import { setupAuth } from "./auth.js";
 import { api } from "../shared/routes.js";
 import { z } from "zod";
 import { sendBookingNotification, sendOrderNotification } from "./email.js";
-import {
-  insertRoomSchema,
-  insertReservationSchema,
-  insertMenuItemSchema,
-  insertOrderSchema,
-} from "../shared/schema.js";
 import type {
   InsertRoom,
   InsertReservation,
@@ -18,6 +12,15 @@ import type {
   InsertOrder,
 } from "../shared/schema.js";
 import Stripe from "stripe";
+import {
+  menuItems,
+  rooms,
+  insertRoomSchema,
+  insertReservationSchema,
+  insertMenuItemSchema,
+  insertOrderSchema,
+  insertMaintenanceRequestSchema,
+} from "../shared/schema.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-06-20",
@@ -436,6 +439,21 @@ app.post("/api/paystack/verify-and-order", async (req, res) => {
       if (!reservation)
         return res.status(404).json({ message: "Reservation not found" });
 
+      // Auto-mark room as dirty when guest checks out
+      if (req.body.status === "checked_out") {
+        storage.upsertHousekeepingTask(reservation.roomId, {
+          status: "dirty",
+          notes: `Auto-flagged after check-out on ${new Date().toLocaleDateString()}`,
+        }).catch(() => {});
+        storage.createNotification({
+          type: "reservation",
+          title: "Room Needs Cleaning",
+          body: `Room for reservation #${reservation.id} was checked out and needs housekeeping.`,
+          isRead: false,
+        }).catch(() => {});
+      }
+
+
       res.json(reservation);
     } catch (err) {
       console.error(err);
@@ -480,6 +498,115 @@ app.post("/api/paystack/verify-and-order", async (req, res) => {
   });
   
 
+  // ─── Housekeeping Routes ─────────────────────────────────────────────────────
+
+app.get("/api/housekeeping", async (req, res) => {
+  if (!req.isAuthenticated()) return res.sendStatus(401);
+  const user = req.user as any;
+  if (!["staff", "manager", "admin"].includes(user.role)) return res.sendStatus(403);
+  const tasks = await storage.getHousekeepingTasks();
+  res.json(tasks);
+});
+
+app.patch("/api/housekeeping/:roomId", async (req, res) => {
+  if (!req.isAuthenticated()) return res.sendStatus(401);
+  const user = req.user as any;
+  if (!["staff", "manager", "admin"].includes(user.role)) return res.sendStatus(403);
+
+  const roomId = Number(req.params.roomId);
+  const { status, notes, assignedTo, scheduledFor } = req.body;
+
+  const task = await storage.upsertHousekeepingTask(roomId, {
+    status,
+    notes,
+    assignedTo: assignedTo ?? null,
+    scheduledFor: scheduledFor ?? null,
+  });
+
+  // Notify when a room is marked clean or inspected
+  if (status === "clean" || status === "inspected") {
+    const room = await storage.getRoom(roomId);
+    storage.createNotification({
+      type: "reservation",
+      title: status === "inspected" ? "Room Inspected & Ready" : "Room Cleaned",
+      body: `Room ${room?.number ?? roomId} has been marked as ${status}.`,
+      isRead: false,
+    }).catch(() => {});
+  }
+
+  res.json(task);
+});
+
+// ─── Maintenance Routes ───────────────────────────────────────────────────────
+
+app.get("/api/maintenance", async (req, res) => {
+  if (!req.isAuthenticated()) return res.sendStatus(401);
+  const user = req.user as any;
+
+  // Staff/admin see all; guests see only their own
+  const requests =
+    ["staff", "manager", "admin"].includes(user.role)
+      ? await storage.getMaintenanceRequests()
+      : await storage.getMaintenanceRequestsByUser(user.id);
+
+  res.json(requests.slice().reverse()); // newest first
+});
+
+app.post("/api/maintenance", async (req, res) => {
+  if (!req.isAuthenticated()) return res.sendStatus(401);
+  const user = req.user as any;
+
+  try {
+    const input = insertMaintenanceRequestSchema.parse(req.body);
+
+    // ✅ Explicitly construct the object with required fields
+    const request = await storage.createMaintenanceRequest({
+      title: input.title,
+      description: input.description,
+      reportedById: user.id,
+      roomId: input.roomId ? Number(input.roomId) : undefined,
+      priority: input.priority,
+      status: input.status,
+      assignedTo: input.assignedTo ? Number(input.assignedTo) : undefined,
+      notes: input.notes,
+    });
+
+    // Notify staff of new request
+    const priorityLabel = request.priority === "urgent" ? "🚨 URGENT" : request.priority;
+    storage.createNotification({
+      type: "order",
+      title: `New Maintenance Request [${priorityLabel}]`,
+      body: `"${request.title}" ${request.roomId ? `— Room ${request.roomId}` : "(Common Area)"}. Reported by user #${user.id}.`,
+      isRead: false,
+    }).catch(() => {});
+
+    res.status(201).json(request);
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      res.status(400).json({ message: err.issues[0].message });
+    } else {
+      res.status(500).json({ message: "Failed to create request" });
+    }
+  }
+});
+
+app.patch("/api/maintenance/:id", async (req, res) => {
+  if (!req.isAuthenticated()) return res.sendStatus(401);
+  const user = req.user as any;
+  if (!["staff", "manager", "admin"].includes(user.role)) return res.sendStatus(403);
+
+  const updates: Record<string, any> = { ...req.body };
+
+  // Stamp resolved time when marking resolved
+  if (req.body.status === "resolved") {
+    updates.resolvedAt = new Date();
+  }
+
+  const updated = await storage.updateMaintenanceRequest(Number(req.params.id), updates);
+  if (!updated) return res.status(404).json({ message: "Request not found" });
+  res.json(updated);
+});
+
   // =================== Chat ===================
 
   app.post(api.chat.send.path, async (req, res) => {
@@ -506,5 +633,29 @@ app.post("/api/paystack/verify-and-order", async (req, res) => {
     }
   });
 
+  // ✅ SEED FUNCTION
+  async function seed() {
+    console.log("[seed] Checking database...");
+
+    const currentMenu = await storage.getMenuItems();
+
+    if (currentMenu.length === 0) {
+      console.log("[seed] Seeding menu...");
+
+      await storage.createMenuItem({
+        name: "Jollof Rice with Chicken",
+        description: "Classic Ghanaian Jollof",
+        price: 85,
+        category: "main",
+        available: true,
+      });
+
+      // add more items...
+    }
+
+    console.log("[seed] Done.");
+  }
+
+  seed().catch(console.error);
   return httpServer;
 }
