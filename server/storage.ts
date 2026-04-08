@@ -1,155 +1,38 @@
-// import { db } from "./db.js";
-// import { eq } from "drizzle-orm";
-// import {
-//   users,
-//   rooms,
-//   reservations,
-//   menuItems,
-//   orders,
-//   orderItems,
-//   messages,
-// } from "../shared/schema.js";
-
-// import type {
-//   User,
-//   InsertUser,
-//   Room,
-//   InsertRoom,
-//   Reservation,
-//   InsertReservation,
-//   MenuItem,
-//   InsertMenuItem,
-//   Order,
-//   InsertOrder,
-//   OrderItem,
-//   InsertOrderItem,
-//   Message,
-//   InsertMessage,
-// } from "../shared/schema.js";
-
-// export { db };
-
-// // ---- USERS ----
-// export async function createUser(data: InsertUser): Promise<User> {
-//   const [user] = await db.insert(users).values(data).returning();
-//   return user;
-// }
-
-// export async function getUserByUsername(username: string): Promise<User | undefined> {
-//   const [user] = await db
-//     .select()
-//     .from(users)
-//     .where(eq(users.username, username));
-
-//   return user;
-// }
-
-// export async function getUser(id: number): Promise<User | undefined> {
-//   const [user] = await db.select().from(users).where(eq(users.id, id));
-//   return user;
-// }
-
-// // ---- ROOMS ----
-// export async function getRooms(): Promise<Room[]> {
-//   return db.select().from(rooms);
-// }
-
-// export async function getRoom(id: number): Promise<Room | undefined> {
-//   const [room] = await db.select().from(rooms).where(eq(rooms.id, id));
-//   return room;
-// }
-
-// export async function createRoom(data: InsertRoom): Promise<Room> {
-//   const [room] = await db.insert(rooms).values(data).returning();
-//   return room;
-// }
-
-// export async function updateRoom(id: number, data: Partial<InsertRoom>) {
-//   const [room] = await db.update(rooms).set(data).where(eq(rooms.id, id)).returning();
-//   return room;
-// }
-
-// export async function deleteRoom(id: number) {
-//   await db.delete(rooms).where(eq(rooms.id, id));
-//   return true;
-// }
-
-// // ---- RESERVATIONS ----
-// export async function createReservation(data: InsertReservation) {
-//   const [r] = await db.insert(reservations).values(data).returning();
-//   return r;
-// }
-
-// export async function getReservations() {
-//   return db.select().from(reservations);
-// }
-
-// export async function updateReservationStatus(id: number, status: string) {
-//   const [r] = await db.update(reservations).set({ status }).where(eq(reservations.id, id)).returning();
-//   return r;
-// }
-
-// // ---- MENU ----
-// export async function getMenuItems() {
-//   return db.select().from(menuItems);
-// }
-
-// export async function createMenuItem(data: InsertMenuItem) {
-//   const [item] = await db.insert(menuItems).values(data).returning();
-//   return item;
-// }
-
-// export async function updateMenuItem(id: number, data: Partial<InsertMenuItem>) {
-//   const [item] = await db.update(menuItems).set(data).where(eq(menuItems.id, id)).returning();
-//   return item;
-// }
-
-// export async function deleteMenuItem(id: number) {
-//   await db.delete(menuItems).where(eq(menuItems.id, id));
-//   return true;
-// }
-
-// // ---- ORDERS ----
-// export async function getOrders() {
-//   return db.select().from(orders);
-// }
-
-// export async function createOrder(data: InsertOrder) {
-//   const [order] = await db.insert(orders).values(data).returning();
-//   return order;
-// }
-
-// export async function updateOrderStatus(id: number, status: string) {
-//   const [o] = await db.update(orders).set({ status }).where(eq(orders.id, id)).returning();
-//   return o;
-// }
-
-// // ---- ORDER ITEMS ----
-// export async function createOrderItem(data: InsertOrderItem) {
-//   const [item] = await db.insert(orderItems).values(data).returning();
-//   return item;
-// }
-
-// // ---- MESSAGES ----
-// export async function getMessages() {
-//   return db.select().from(messages);
-// }
-
-// export async function createMessage(data: InsertMessage) {
-//   const [m] = await db.insert(messages).values(data).returning();
-//   return m;
-// }
-
-
-import { users, rooms, reservations, menuItems, orders, 
-  orderItems, messages, type User, type InsertUser, type Room, type Reservation, type MenuItem, type Order, type OrderItem, type Message } from "../shared/schema.js";
 import { db } from "./db.js";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db.js";
+import {
+  users,
+  rooms,
+  reservations,
+  menuItems,
+  orders,
+  orderItems,
+  messages,
+  notifications,
+} from "../shared/schema.js";
+
+import type {
+  User,
+  InsertUser,
+  Room,
+  Reservation,
+  MenuItem,
+  Order,
+  Message,
+  Notification,
+} from "../shared/schema.js";
 
 const PostgresSessionStore = connectPg(session);
+
+// =================== Status Types ===================
+
+type ReservationStatus = "pending" | "confirmed" | "cancelled";
+type OrderStatus = "pending" | "preparing" | "completed";
+
+// =================== Interface ===================
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -164,7 +47,7 @@ export interface IStorage {
 
   getReservations(): Promise<Reservation[]>;
   createReservation(reservation: typeof reservations.$inferInsert): Promise<Reservation>;
-  updateReservationStatus(id: number, status: string): Promise<Reservation | undefined>;
+  updateReservationStatus(id: number, status: ReservationStatus): Promise<Reservation | undefined>;
 
   getMenuItems(): Promise<MenuItem[]>;
   createMenuItem(item: typeof menuItems.$inferInsert): Promise<MenuItem>;
@@ -173,17 +56,24 @@ export interface IStorage {
 
   getOrders(): Promise<Order[]>;
   createOrder(order: typeof orders.$inferInsert, items: { menuItemId: number; quantity: number }[]): Promise<Order>;
-  updateOrderStatus(id: number, status: string): Promise<Order | undefined>;
+  updateOrderStatus(id: number, status: OrderStatus): Promise<Order | undefined>;
 
   getMessages(): Promise<Message[]>;
   createMessage(message: typeof messages.$inferInsert): Promise<Message>;
 
+  getNotifications(): Promise<Notification[]>;
+  createNotification(notification: typeof notifications.$inferInsert): Promise<Notification>;
+  markNotificationRead(id: number): Promise<Notification | undefined>;
+  markAllNotificationsRead(): Promise<void>;
+
   sessionStore: session.Store;
 }
 
+// =================== Implementation ===================
+
 export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
-  db = db; // Expose db for direct operations in routes if needed
+  db = db;
 
   constructor() {
     this.sessionStore = new PostgresSessionStore({
@@ -191,6 +81,8 @@ export class DatabaseStorage implements IStorage {
       createTableIfMissing: true,
     });
   }
+
+  // =================== Users ===================
 
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -206,6 +98,8 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db.insert(users).values(insertUser).returning();
     return user;
   }
+
+  // =================== Rooms ===================
 
   async getRooms(): Promise<Room[]> {
     return await db.select().from(rooms);
@@ -227,13 +121,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteRoom(id: number): Promise<boolean> {
-    const result = await db.delete(rooms).where(eq(rooms.id, id));
-    return true;
+    const result = await db.delete(rooms).where(eq(rooms.id, id)).returning();
+    return result.length > 0;
   }
+
+  // =================== Reservations ===================
 
   async getReservations(): Promise<(Reservation & { guestName?: string; guestPhone?: string })[]> {
     const allReservations = await db.select().from(reservations);
-    const reservationsWithUsers = await Promise.all(
+
+    return await Promise.all(
       allReservations.map(async (res) => {
         const user = await this.getUser(res.userId);
         return {
@@ -243,49 +140,27 @@ export class DatabaseStorage implements IStorage {
         };
       })
     );
-    return reservationsWithUsers;
   }
 
-  async updateReservationPayment(id: number, data: { paymentIntentId?: string; paymentStatus?: string }) {
-    const [updated] = await db
-      .update(reservations)
-      .set(data)
-      .where(eq(reservations.id, id))
-      .returning();
-    return updated;
-  }
-  
-  async updateOrderPayment(id: number, data: { paymentIntentId?: string; paymentStatus?: string }) {
-    const [updated] = await db
-      .update(orders)
-      .set(data)
-      .where(eq(orders.id, id))
-      .returning();
-    return updated;
-  }
-  
-  async getOrder(id: number) {
-    const [order] = await db.select().from(orders).where(eq(orders.id, id));
-    return order;
-  }
-  
   async getReservation(id: number) {
     const [reservation] = await db.select().from(reservations).where(eq(reservations.id, id));
     return reservation;
   }
-  
+
   async createReservation(reservation: typeof reservations.$inferInsert): Promise<Reservation> {
-    // Prevent double booking
-    const existing = await db.select().from(reservations).where(
-      eq(reservations.roomId, reservation.roomId)
-    );
-    
-    const overlap = existing.some(r => {
-      if (r.status === 'cancelled') return false;
+    const existing = await db
+      .select()
+      .from(reservations)
+      .where(eq(reservations.roomId, reservation.roomId));
+
+    const overlap = existing.some((r) => {
+      if (r.status === "cancelled") return false;
+
       const start = new Date(r.checkIn);
       const end = new Date(r.checkOut);
       const newStart = new Date(reservation.checkIn);
       const newEnd = new Date(reservation.checkOut);
+
       return newStart < end && newEnd > start;
     });
 
@@ -297,10 +172,25 @@ export class DatabaseStorage implements IStorage {
     return newReservation;
   }
 
-  async updateReservationStatus(id: number, status: string): Promise<Reservation | undefined> {
-    const [updated] = await db.update(reservations).set({ status }).where(eq(reservations.id, id)).returning();
+  async updateReservationStatus(id: number, status: ReservationStatus): Promise<Reservation | undefined> {
+    const [updated] = await db
+      .update(reservations)
+      .set({ status })
+      .where(eq(reservations.id, id))
+      .returning();
     return updated;
   }
+
+  async updateReservationPayment(id: number, data: { paymentIntentId?: string; paymentStatus?: string }) {
+    const [updated] = await db
+      .update(reservations)
+      .set(data)
+      .where(eq(reservations.id, id))
+      .returning();
+    return updated;
+  }
+
+  // =================== Menu ===================
 
   async getMenuItems(): Promise<MenuItem[]> {
     return await db.select().from(menuItems);
@@ -312,8 +202,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteMenuItem(id: number): Promise<boolean> {
-    await db.delete(menuItems).where(eq(menuItems.id, id));
-    return true;
+    const result = await db.delete(menuItems).where(eq(menuItems.id, id)).returning();
+    return result.length > 0;
   }
 
   async updateMenuItem(id: number, updates: Partial<typeof menuItems.$inferInsert>): Promise<MenuItem | undefined> {
@@ -321,39 +211,74 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
+  // =================== Orders ===================
+
   async getOrders(): Promise<Order[]> {
     return await db.select().from(orders);
   }
 
-  async createOrder(order: typeof orders.$inferInsert, items: { menuItemId: number; quantity: number }[]): Promise<Order> {
-    const [newOrder] = await db.insert(orders).values(order).returning();
-    
-    for (const item of items) {
-      const [menuItem] = await db.select().from(menuItems).where(eq(menuItems.id, item.menuItemId));
-      if (menuItem) {
-        // Decrease stock level
-        await db.update(menuItems)
-          .set({ stockLevel: Math.max(0, menuItem.stockLevel - item.quantity) })
+  async getOrder(id: number) {
+    const [order] = await db.select().from(orders).where(eq(orders.id, id));
+    return order;
+  }
+
+  async createOrder(
+    order: typeof orders.$inferInsert,
+    items: { menuItemId: number; quantity: number }[]
+  ): Promise<Order> {
+    return await db.transaction(async (tx) => {
+      const [newOrder] = await tx.insert(orders).values(order).returning();
+
+      for (const item of items) {
+        const [menuItem] = await tx
+          .select()
+          .from(menuItems)
+          .where(eq(menuItems.id, item.menuItemId));
+
+        if (!menuItem) continue;
+
+        await tx
+          .update(menuItems)
+          .set({
+            stockLevel: Math.max(0, menuItem.stockLevel - item.quantity),
+          })
           .where(eq(menuItems.id, menuItem.id));
 
-        await db.insert(orderItems).values({
+        await tx.insert(orderItems).values({
           orderId: newOrder.id,
           menuItemId: item.menuItemId,
           quantity: item.quantity,
-          priceAtTime: menuItem.price
+          priceAtTime: menuItem.price,
         });
       }
-    }
-    return newOrder;
+
+      return newOrder;
+    });
   }
 
-  async updateOrderStatus(id: number, status: string): Promise<Order | undefined> {
-    const [updated] = await db.update(orders).set({ status }).where(eq(orders.id, id)).returning();
+  async updateOrderStatus(id: number, status: OrderStatus): Promise<Order | undefined> {
+    const [updated] = await db
+      .update(orders)
+      .set({ status })
+      .where(eq(orders.id, id))
+      .returning();
     return updated;
   }
 
+  async updateOrderPayment(id: number, data: { paymentIntentId?: string; paymentStatus?: string }) {
+    const [updated] = await db
+      .update(orders)
+      .set(data)
+      .where(eq(orders.id, id))
+      .returning();
+    return updated;
+  }
+
+  // =================== Messages ===================
+
   async getMessages(): Promise<(Message & { sender?: { name: string } })[]> {
     const allMessages = await db.select().from(messages);
+
     return await Promise.all(
       allMessages.map(async (msg) => {
         const user = await this.getUser(msg.senderId);
@@ -368,6 +293,33 @@ export class DatabaseStorage implements IStorage {
   async createMessage(message: typeof messages.$inferInsert): Promise<Message> {
     const [newMessage] = await db.insert(messages).values(message).returning();
     return newMessage;
+  }
+
+  // =================== Notifications ===================
+
+  async getNotifications(): Promise<Notification[]> {
+    return await db
+      .select()
+      .from(notifications)
+      .orderBy(desc(notifications.createdAt));
+  }
+
+  async createNotification(notification: typeof notifications.$inferInsert): Promise<Notification> {
+    const [newNotification] = await db.insert(notifications).values(notification).returning();
+    return newNotification;
+  }
+
+  async markNotificationRead(id: number): Promise<Notification | undefined> {
+    const [updated] = await db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(eq(notifications.id, id))
+      .returning();
+    return updated;
+  }
+
+  async markAllNotificationsRead(): Promise<void> {
+    await db.update(notifications).set({ isRead: true });
   }
 }
 

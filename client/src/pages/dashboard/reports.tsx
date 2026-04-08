@@ -8,7 +8,17 @@ import {
   PieChart, Pie, Cell, LineChart, Line
 } from "recharts";
 
+// import { useAuth } from "@/hooks/use-auth";
+// import { Redirect } from "wouter";
+
 export default function ReportsPage() {
+  // This is to ensure the user is management only, staff and guest cannot access it
+  // const { user } = useAuth();
+
+  // if (!user || user.role !== "manager") {
+  //   return <Redirect to="/dashboard" />;
+  // }
+
   const { data: rooms = [] } = useQuery<Room[]>({ queryKey: [api.rooms.list.path] });
   const { data: reservations = [] } = useQuery<Reservation[]>({ queryKey: [api.reservations.list.path] });
   const { data: orders = [] } = useQuery<Order[]>({ queryKey: [api.orders.list.path] });

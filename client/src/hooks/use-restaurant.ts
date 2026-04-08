@@ -36,6 +36,8 @@ export function useRestaurant() {
   const ordersQuery = useQuery<Order[]>({
     queryKey: [api.orders.list.path],
     queryFn: () => apiFetch<Order[]>(api.orders.list.path),
+    refetchInterval: 15000,          // poll every 15 seconds
+    refetchIntervalInBackground: true, // keep polling even when tab is in background
   });
 
   const createMenuItemMutation = useMutation({
