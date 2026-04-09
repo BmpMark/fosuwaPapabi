@@ -190,9 +190,6 @@ export const maintenanceRequests = pgTable("maintenance_requests", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// export const insertMaintenanceRequestSchema = createInsertSchema(maintenanceRequests)
-//   .extend({ id: z.undefined(), createdAt: z.undefined(), resolvedAt: z.undefined() })
-//   .omit({ id: true, createdAt: true, resolvedAt: true });
 
 export const insertMaintenanceRequestSchema = createInsertSchema(maintenanceRequests)
   .omit({ id: true, createdAt: true, resolvedAt: true })
