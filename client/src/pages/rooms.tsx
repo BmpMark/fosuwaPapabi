@@ -48,6 +48,7 @@ import { Label } from "@/components/ui/label";
 import { apiRequest } from "@/lib/queryClient";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@shared/routes";
+import { PaymentModal } from "@/components/payment-modal";
 
 import roomImgPath from "@assets/fosuapapabiroom_1767732411656.jpg";
 import standardRoomImgPath from "@assets/standardroom_1767732987982.jpg";
@@ -61,6 +62,7 @@ const bookingSchema = z.object({
 export default function RoomsPage() {
   const { rooms, isLoading } = useRooms();
   const { user } = useAuth();
+  
 
   if (isLoading) {
     return (
@@ -101,6 +103,7 @@ function RoomCard({ room, user, isManagerRoom }: { room: any; user: any; isManag
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "mobile_money">("cash");
   const [isVerifying, setIsVerifying] = useState(false);
+  const [paymentModal, setPaymentModal] = useState<{ id: number; amount: number } | null>(null);
   const resolvedIsManagerRoom = isManagerRoom ?? room.number === "2";
   const roomEvents = (reservations || [])
     .filter((r: any) => r.roomId === room.id && r.status !== "cancelled")
@@ -146,7 +149,10 @@ function RoomCard({ room, user, isManagerRoom }: { room: any; user: any; isManag
         paymentMethod: "cash",
         paymentStatus: "pending",
       },
-      { onSuccess: () => setIsOpen(false) }
+      onSuccess: (newReservation) => {
+        setPaymentModal({ id: newReservation.id, amount: newReservation.totalPrice });
+        setIsOpen(false);
+      }
     );
   };
   // ── Mobile Money: called after Paystack popup succeeds ────────────────────
@@ -363,6 +369,16 @@ function RoomCard({ room, user, isManagerRoom }: { room: any; user: any; isManag
           </Dialog>
         )}
       </CardFooter>
+      {paymentModal && (
+  <PaymentModal
+    open
+    type="reservation"
+    itemId={paymentModal.id}
+    amount={paymentModal.amount}
+    onClose={() => setPaymentModal(null)}
+    onSuccess={() => queryClient.invalidateQueries({ queryKey: [api.reservations.list.path] })}
+  />
+)}
     </Card>
   );
 }

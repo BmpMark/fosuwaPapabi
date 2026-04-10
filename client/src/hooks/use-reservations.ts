@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { OfflineCache } from "@/lib/offline-utils";
 import { useOnline } from "@/hooks/use-online";
 import { useEffect } from "react";
+import { PaymentModal } from "@/components/payment-modal";
 import { apiFetch } from "@/lib/api";
 
 export function useReservations() {

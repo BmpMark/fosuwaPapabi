@@ -6,6 +6,7 @@ import { OfflineCache, NetworkUtils } from "@/lib/offline-utils";
 import { useOnline } from "@/hooks/use-online";
 import { useEffect } from "react";
 import { apiFetch } from "@/lib/api";
+import { PaymentModal } from "@/components/payment-modal";
 
 export function useRestaurant() {
   const queryClient = useQueryClient();

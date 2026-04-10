@@ -198,6 +198,9 @@ export const reservations = pgTable("reservations", {
   checkOut: date("check_out").notNull(),
   status: text("status").notNull().default("confirmed"), // confirmed, checked_in, checked_out, cancelled
   totalPrice: integer("total_price").notNull(),
+
+  paymentStatus: text("payment_status").default("pending"),       // "pending" | "paid" | "failed"
+  paymentIntentId: text("payment_intent_id"),
 });
 
 export const insertReservationSchema = createInsertSchema(reservations).extend({ id: z.undefined() }).omit({ id: true });
@@ -227,6 +230,9 @@ export const orders = pgTable("orders", {
   status: text("status").notNull().default("pending"), // pending, preparing, delivered, completed, billed
   totalAmount: integer("total_amount").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+
+  paymentStatus: text("payment_status").default("pending"),       // "pending" | "paid" | "failed"
+  paymentIntentId: text("payment_intent_id"),
 });
 
 export const insertOrderSchema = createInsertSchema(orders).extend({ id: z.undefined(), createdAt: z.undefined() }).omit({ id: true, createdAt: true });

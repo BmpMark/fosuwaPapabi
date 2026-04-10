@@ -20,6 +20,82 @@ import type {
   InsertOrder,
 } from "../shared/schema.js";
 import { eq, sql } from "drizzle-orm";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2024-06-20",
+});
+
+// Create payment intent for a reservation
+app.post("/api/payments/reservation-intent", async (req, res) => {
+  try {
+    const { reservationId } = req.body;
+    const reservation = await storage.getReservation(reservationId);
+    if (!reservation) return res.status(404).json({ message: "Reservation not found" });
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(reservation.totalPrice * 100), // convert to pesewas/cents
+      currency: "ghc", // change to "usd" or your currency
+      metadata: { reservationId: String(reservationId) },
+    });
+
+    await storage.updateReservationPayment(reservationId, {
+      paymentIntentId: paymentIntent.id,
+      paymentStatus: "pending",
+    });
+
+    res.json({ clientSecret: paymentIntent.client_secret });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to create payment intent" });
+  }
+});
+
+// Create payment intent for a food order
+app.post("/api/payments/order-intent", async (req, res) => {
+  try {
+    const { orderId } = req.body;
+    const order = await storage.getOrder(orderId);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(order.totalAmount * 100),
+      currency: "ghc",
+      metadata: { orderId: String(orderId) },
+    });
+
+    await storage.updateOrderPayment(orderId, {
+      paymentIntentId: paymentIntent.id,
+      paymentStatus: "pending",
+    });
+
+    res.json({ clientSecret: paymentIntent.client_secret });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to create payment intent" });
+  }
+});
+
+// Confirm payment (called after Stripe confirms on frontend)
+app.post("/api/payments/confirm", async (req, res) => {
+  try {
+    const { paymentIntentId } = req.body;
+    const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+    if (intent.status === "succeeded") {
+      const { reservationId, orderId } = intent.metadata;
+      if (reservationId) {
+        await storage.updateReservationPayment(Number(reservationId), { paymentStatus: "paid" });
+      }
+      if (orderId) {
+        await storage.updateOrderPayment(Number(orderId), { paymentStatus: "paid" });
+      }
+      res.json({ success: true });
+    } else {
+      res.status(400).json({ message: "Payment not completed" });
+    }
+  } catch (err) {
+    res.status(500).json({ message: "Failed to confirm payment" });
+  }
+});
 
 export async function registerRoutes(
   httpServer: Server,

@@ -29,13 +29,13 @@ export function DashboardSidebar() {
     { href: "/dashboard/bill", label: "My Bills", icon: Receipt },
   ];
 
+
   const adminLinks = [
     { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
     { href: "/dashboard/rooms", label: "Rooms", icon: Bed },
     { href: "/dashboard/reservations", label: "Reservations", icon: Calendar },
     { href: "/dashboard/menu", label: "Menu Items", icon: ClipboardList },
     { href: "/dashboard/kitchen", label: "Kitchen Orders", icon: Utensils },
-    { href: "/dashboard/reports", label: "Reports", icon: BarChart3 },
     ...(isManager ? [{ href: "/dashboard/reports", label: "Reports", icon: BarChart3 }] : []),
   ];
 

@@ -9,6 +9,7 @@ import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { formatDistanceToNow, format } from "date-fns";
 import { Clock, RefreshCw } from "lucide-react";
+import { PaymentModal } from "@/components/payment-modal";
 
 // ─── UTC timestamp fix ───────────────────────────────────────────────────────
 // PostgreSQL returns timestamps without the 'Z' suffix (e.g. "2024-01-01T10:00:00.000000").

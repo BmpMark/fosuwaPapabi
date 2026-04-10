@@ -9,6 +9,7 @@ import { OfflineIndicator } from "@/components/offline-indicator";
 import { DataFreshnessIndicator } from "@/components/data-freshness-indicator";
 import { useLocation } from "wouter";
 import { CloudOff, Save, AlertCircle } from "lucide-react";
+import { PaymentModal } from "@/components/payment-modal";
 import React from "react";
 export default function ReservationsPage() {
     const { user } = useAuth();
