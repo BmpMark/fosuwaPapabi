@@ -1,148 +1,11 @@
-// import { db } from "./db.js";
-// import { eq } from "drizzle-orm";
-// import {
-//   users,
-//   rooms,
-//   reservations,
-//   menuItems,
-//   orders,
-//   orderItems,
-//   messages,
-// } from "../shared/schema.js";
 
-// import type {
-//   User,
-//   InsertUser,
-//   Room,
-//   InsertRoom,
-//   Reservation,
-//   InsertReservation,
-//   MenuItem,
-//   InsertMenuItem,
-//   Order,
-//   InsertOrder,
-//   OrderItem,
-//   InsertOrderItem,
-//   Message,
-//   InsertMessage,
-// } from "../shared/schema.js";
-
-// export { db };
-
-// // ---- USERS ----
-// export async function createUser(data: InsertUser): Promise<User> {
-//   const [user] = await db.insert(users).values(data).returning();
-//   return user;
-// }
-
-// export async function getUserByUsername(username: string): Promise<User | undefined> {
-//   const [user] = await db
-//     .select()
-//     .from(users)
-//     .where(eq(users.username, username));
-
-//   return user;
-// }
-
-// export async function getUser(id: number): Promise<User | undefined> {
-//   const [user] = await db.select().from(users).where(eq(users.id, id));
-//   return user;
-// }
-
-// // ---- ROOMS ----
-// export async function getRooms(): Promise<Room[]> {
-//   return db.select().from(rooms);
-// }
-
-// export async function getRoom(id: number): Promise<Room | undefined> {
-//   const [room] = await db.select().from(rooms).where(eq(rooms.id, id));
-//   return room;
-// }
-
-// export async function createRoom(data: InsertRoom): Promise<Room> {
-//   const [room] = await db.insert(rooms).values(data).returning();
-//   return room;
-// }
-
-// export async function updateRoom(id: number, data: Partial<InsertRoom>) {
-//   const [room] = await db.update(rooms).set(data).where(eq(rooms.id, id)).returning();
-//   return room;
-// }
-
-// export async function deleteRoom(id: number) {
-//   await db.delete(rooms).where(eq(rooms.id, id));
-//   return true;
-// }
-
-// // ---- RESERVATIONS ----
-// export async function createReservation(data: InsertReservation) {
-//   const [r] = await db.insert(reservations).values(data).returning();
-//   return r;
-// }
-
-// export async function getReservations() {
-//   return db.select().from(reservations);
-// }
-
-// export async function updateReservationStatus(id: number, status: string) {
-//   const [r] = await db.update(reservations).set({ status }).where(eq(reservations.id, id)).returning();
-//   return r;
-// }
-
-// // ---- MENU ----
-// export async function getMenuItems() {
-//   return db.select().from(menuItems);
-// }
-
-// export async function createMenuItem(data: InsertMenuItem) {
-//   const [item] = await db.insert(menuItems).values(data).returning();
-//   return item;
-// }
-
-// export async function updateMenuItem(id: number, data: Partial<InsertMenuItem>) {
-//   const [item] = await db.update(menuItems).set(data).where(eq(menuItems.id, id)).returning();
-//   return item;
-// }
-
-// export async function deleteMenuItem(id: number) {
-//   await db.delete(menuItems).where(eq(menuItems.id, id));
-//   return true;
-// }
-
-// // ---- ORDERS ----
-// export async function getOrders() {
-//   return db.select().from(orders);
-// }
-
-// export async function createOrder(data: InsertOrder) {
-//   const [order] = await db.insert(orders).values(data).returning();
-//   return order;
-// }
-
-// export async function updateOrderStatus(id: number, status: string) {
-//   const [o] = await db.update(orders).set({ status }).where(eq(orders.id, id)).returning();
-//   return o;
-// }
-
-// // ---- ORDER ITEMS ----
-// export async function createOrderItem(data: InsertOrderItem) {
-//   const [item] = await db.insert(orderItems).values(data).returning();
-//   return item;
-// }
-
-// // ---- MESSAGES ----
-// export async function getMessages() {
-//   return db.select().from(messages);
-// }
-
-// export async function createMessage(data: InsertMessage) {
-//   const [m] = await db.insert(messages).values(data).returning();
-//   return m;
-// }
-
-
-import { users, rooms, reservations, menuItems, orders, 
-  orderItems, messages, notifications, type User, type InsertUser, type Room, type Reservation, type MenuItem, type Order, type OrderItem, type Message, type Notification } from "../shared/schema.js";
+import {
+    users, rooms, reservations, menuItems, orders,
+    orderItems, messages, notifications, housekeepingTasks, maintenanceRequests, insertMaintenanceRequestSchema, insertHousekeepingTaskSchema,
+    type User, type InsertUser, type Room, type Reservation,
+    type MenuItem, type Order, type OrderItem, type Message,
+    type Notification, type HousekeepingTask, type MaintenanceRequest, type InsertHousekeepingTask, type InsertMaintenanceRequest
+  } from "../shared/schema.js";
 import { db } from "./db.js";
 import { eq } from "drizzle-orm";
 import session from "express-session";
@@ -183,8 +46,31 @@ export interface IStorage {
   markNotificationRead(id: number): Promise<Notification | undefined>;
   markAllNotificationsRead(): Promise<void>;
 
+  // Housekeeping
+  getHousekeepingTasks(): Promise<HousekeepingTask[]>;
+  upsertHousekeepingTask(roomId: number, data: Partial<typeof housekeepingTasks.$inferInsert>): Promise<HousekeepingTask>;
+
+  // Maintenance
+  getMaintenanceRequests(): Promise<MaintenanceRequest[]>;
+  getMaintenanceRequestsByUser(userId: number): Promise<MaintenanceRequest[]>;
+  createMaintenanceRequest(data: typeof maintenanceRequests.$inferInsert): Promise<MaintenanceRequest>;
+  updateMaintenanceRequest(id: number, updates: Partial<typeof maintenanceRequests.$inferInsert>): Promise<MaintenanceRequest | undefined>;
+
   sessionStore: session.Store;
 }
+
+
+export interface HousekeepingStorage {
+  getHousekeepingTasks(): Promise<HousekeepingTask[]>;
+  upsertHousekeepingTask(task: InsertHousekeepingTask): Promise<HousekeepingTask>;
+}
+
+export interface MaintenanceStorage {
+  getMaintenanceRequests(): Promise<MaintenanceRequest[]>;
+  insertMaintenanceRequest(request: InsertMaintenanceRequest): Promise<MaintenanceRequest>;
+}
+
+export interface Storage extends HousekeepingStorage, MaintenanceStorage {}
 
 export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
@@ -375,6 +261,76 @@ export class DatabaseStorage implements IStorage {
     return reservation;
   }
 
+  // ── Housekeeping ─────────────────────────────────────────────────────────────
+
+  
+ 
+  async upsertHousekeepingTask(
+    roomId: number,
+    data: Partial<typeof housekeepingTasks.$inferInsert>
+  ): Promise<HousekeepingTask> {
+    const existing = await db
+      .select()
+      .from(housekeepingTasks)
+      .where(eq(housekeepingTasks.roomId, roomId));
+
+    if (existing.length > 0) {
+      const [updated] = await db
+        .update(housekeepingTasks)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(housekeepingTasks.roomId, roomId))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(housekeepingTasks)
+        .values({ roomId, ...data, updatedAt: new Date() })
+        .returning();
+      return created;
+    }
+  }
+
+  async getHousekeepingTasks(): Promise<HousekeepingTask[]> {
+    return await db.select().from(housekeepingTasks).orderBy(housekeepingTasks.updatedAt);
+  }
+  
+
+  // ── Maintenance ───────────────────────────────────────────────────────────────
+
+  async getMaintenanceRequests(): Promise<MaintenanceRequest[]> {
+    return await db
+      .select()
+      .from(maintenanceRequests)
+      .orderBy(maintenanceRequests.createdAt);
+  }
+
+  async getMaintenanceRequestsByUser(userId: number): Promise<MaintenanceRequest[]> {
+    return await db
+      .select()
+      .from(maintenanceRequests)
+      .where(eq(maintenanceRequests.reportedById, userId))
+      .orderBy(maintenanceRequests.createdAt);
+  }
+
+  async createMaintenanceRequest(
+    data: typeof maintenanceRequests.$inferInsert
+  ): Promise<MaintenanceRequest> {
+    const [created] = await db.insert(maintenanceRequests).values(data).returning();
+    return created;
+  }
+
+  async updateMaintenanceRequest(
+    id: number,
+    updates: Partial<typeof maintenanceRequests.$inferInsert>
+  ): Promise<MaintenanceRequest | undefined> {
+    const [updated] = await db
+      .update(maintenanceRequests)
+      .set(updates)
+      .where(eq(maintenanceRequests.id, id))
+      .returning();
+    return updated;
+  }
+
   async getNotifications(): Promise<Notification[]> {
     return await db.select().from(notifications).orderBy(notifications.createdAt);
   }
@@ -388,6 +344,7 @@ export class DatabaseStorage implements IStorage {
     const [updated] = await db.update(notifications).set({ isRead: true }).where(eq(notifications.id, id)).returning();
     return updated;
   }
+  
 
   async markAllNotificationsRead(): Promise<void> {
     await db.update(notifications).set({ isRead: true });

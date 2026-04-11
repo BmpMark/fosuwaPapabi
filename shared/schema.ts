@@ -189,6 +189,7 @@ export const rooms = pgTable("rooms", {
 
 // export const insertRoomSchema = createInsertSchema(rooms).omit({ id: true });
 export const insertRoomSchema = createInsertSchema(rooms).extend({ id: z.undefined() }).omit({ id: true });
+
 // Reservations
 export const reservations = pgTable("reservations", {
   id: serial("id").primaryKey(),
@@ -196,13 +197,13 @@ export const reservations = pgTable("reservations", {
   roomId: integer("room_id").notNull(),
   checkIn: date("check_in").notNull(),
   checkOut: date("check_out").notNull(),
-  status: text("status").notNull().default("confirmed"), // confirmed, checked_in, checked_out, cancelled
+  status: text("status").notNull().default("confirmed"),
   totalPrice: integer("total_price").notNull(),
-
-  paymentStatus: text("payment_status").default("pending"),       // "pending" | "paid" | "failed"
-  paymentIntentId: text("payment_intent_id"),
+  // NEW: payment tracking
+  paymentMethod: text("payment_method").notNull().default("cash"), // "cash" | "mobile_money"
+  paymentReference: text("payment_reference"),
+  paymentStatus: text("payment_status").notNull().default("pending"), // "pending" | "paid"
 });
-
 export const insertReservationSchema = createInsertSchema(reservations).extend({ id: z.undefined() }).omit({ id: true });
 
 // Menu Items
@@ -221,18 +222,32 @@ export const menuItems = pgTable("menu_items", {
 export const insertMenuItemSchema = createInsertSchema(menuItems).extend({ id: z.undefined() }).omit({ id: true });
 
 // Orders
+// export const orders = pgTable("orders", {
+//   id: serial("id").primaryKey(),
+//   userId: integer("user_id"), // Nullable for walk-in? Let's say required for now or handled by staff
+//   roomId: integer("room_id"), // Optional: if room service
+//   type: text("type").notNull(), // dine_in, room_service, take_away
+//   paymentMethod: text("payment_method").notNull().default("cash"), // cash, room_folio
+//   status: text("status").notNull().default("pending"), // pending, preparing, delivered, completed, billed
+//   totalAmount: integer("total_amount").notNull(),
+//   createdAt: timestamp("created_at").defaultNow().notNull(),
+
+//   paymentStatus: text("payment_status").default("pending"),       // "pending" | "paid" | "failed"
+//   paymentIntentId: text("payment_intent_id"),
+// });
+
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id"), // Nullable for walk-in? Let's say required for now or handled by staff
-  roomId: integer("room_id"), // Optional: if room service
-  type: text("type").notNull(), // dine_in, room_service, take_away
-  paymentMethod: text("payment_method").notNull().default("cash"), // cash, room_folio
-  status: text("status").notNull().default("pending"), // pending, preparing, delivered, completed, billed
+  userId: integer("user_id"),
+  roomId: integer("room_id"),
+  type: text("type").notNull(),
+  paymentMethod: text("payment_method").notNull().default("cash"),
+  status: text("status").notNull().default("pending"),
   totalAmount: integer("total_amount").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-
-  paymentStatus: text("payment_status").default("pending"),       // "pending" | "paid" | "failed"
-  paymentIntentId: text("payment_intent_id"),
+  // NEW: payment tracking
+  paymentReference: text("payment_reference"),
+  paymentStatus: text("payment_status").notNull().default("pending"), // "pending" | "paid"
 });
 
 export const insertOrderSchema = createInsertSchema(orders).extend({ id: z.undefined(), createdAt: z.undefined() }).omit({ id: true, createdAt: true });
@@ -274,6 +289,48 @@ export const notifications = pgTable("notifications", {
 export const insertNotificationSchema = createInsertSchema(notifications).extend({ id: z.undefined(), createdAt: z.undefined() }).omit({ id: true, createdAt: true });
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
+
+
+// Housekeeping Tasks — one record per room, upserted on status changes
+export const housekeepingTasks = pgTable("housekeeping_tasks", {
+  id: serial("id").primaryKey(),
+  roomId: integer("room_id").notNull().unique(), // one active task per room
+  status: text("status").notNull().default("clean"), // clean | dirty | in_progress | inspected
+  assignedTo: integer("assigned_to"),              // staff user id
+  notes: text("notes"),
+  scheduledFor: date("scheduled_for"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertHousekeepingTaskSchema = createInsertSchema(housekeepingTasks)
+  .extend({ id: z.undefined(), updatedAt: z.undefined() })
+  .omit({ id: true, updatedAt: true });
+
+export type HousekeepingTask = typeof housekeepingTasks.$inferSelect;
+export type InsertHousekeepingTask = typeof housekeepingTasks.$inferInsert;
+
+// Maintenance Requests
+export const maintenanceRequests = pgTable("maintenance_requests", {
+  id: serial("id").primaryKey(),
+  roomId: integer("room_id"),                      // nullable — covers common areas too
+  reportedById: integer("reported_by_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  priority: text("priority").notNull().default("medium"), // low | medium | high | urgent
+  status: text("status").notNull().default("open"),       // open | in_progress | resolved
+  assignedTo: integer("assigned_to"),
+  notes: text("notes"),                            // resolution / progress notes
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertMaintenanceRequestSchema = createInsertSchema(maintenanceRequests)
+  .extend({ id: z.undefined(), createdAt: z.undefined(), resolvedAt: z.undefined() })
+  .omit({ id: true, createdAt: true, resolvedAt: true });
+
+export type MaintenanceRequest = typeof maintenanceRequests.$inferSelect;
+export type InsertMaintenanceRequest = typeof maintenanceRequests.$inferInsert;
+
 
 // Relations
 export const messagesRelations = relations(messages, ({ one }) => ({

@@ -16,6 +16,8 @@ import RoomsAdminPage from "@/pages/dashboard/rooms-admin";
 import MenuManagementPage from "@/pages/dashboard/menu-management";
 import ReservationsPage from "@/pages/dashboard/reservations";
 import KitchenOrdersPage from "@/pages/dashboard/kitchen-orders";
+import MaintenancePage from "@/pages/dashboard/maintenance";
+import HousekeepingPage from "@/pages/dashboard/housekeeping";
 import BillPage from "@/pages/dashboard/bill";
 import ReportsPage from "@/pages/dashboard/reports";
 import NotFound from "@/pages/not-found";
@@ -96,6 +98,12 @@ function Router() {
       </Route>
       <Route path="/dashboard/kitchen">
         <AdminRoute component={KitchenOrdersPage} />
+      </Route>
+      <Route path="/dashboard/housekeeping">
+        <AdminRoute component={HousekeepingPage} />
+      </Route>
+      <Route path="/dashboard/maintenance">
+        <AdminRoute component={MaintenancePage} />
       </Route>
       <Route path="/dashboard/reports">
       <ManagerRoute component={ReportsPage} />

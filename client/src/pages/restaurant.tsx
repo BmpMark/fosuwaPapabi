@@ -207,7 +207,7 @@ export default function RestaurantPage() {
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           <h1 className="font-display text-4xl md:text-6xl font-bold mb-4">
-            Fosua Special
+            Fosua Papabi Special
           </h1>
           <p className="text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto font-light">
             A culinary experience curated with passion and local ingredients.
@@ -440,6 +440,7 @@ export default function RestaurantPage() {
           : "Place Order"
         : "Save for Later"}
   </Button>
+  
 )}
 
                   {!isOnline && (

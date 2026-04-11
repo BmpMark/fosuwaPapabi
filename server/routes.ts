@@ -12,12 +12,16 @@ import {
   insertReservationSchema,
   insertMenuItemSchema,
   insertOrderSchema,
+  insertMaintenanceRequestSchema,
+  insertHousekeepingTaskSchema
 } from "../shared/schema.js";
 import type {
   InsertRoom,
   InsertReservation,
   InsertMenuItem,
   InsertOrder,
+  HousekeepingTask, 
+  MaintenanceRequest
 } from "../shared/schema.js";
 import { eq, sql } from "drizzle-orm";
 import Stripe from "stripe";
@@ -25,6 +29,7 @@ import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2026-03-25.dahlia",
 });
+
 
 
 export async function registerRoutes(
@@ -114,9 +119,34 @@ export async function registerRoutes(
     }
   });
 
+  // app.patch(api.reservations.updateStatus.path, async (req, res) => {
+  //   const reservation = await storage.updateReservationStatus(Number(req.params.id), req.body.status);
+  //   if (!reservation) return res.status(404).json({ message: "Reservation not found" });
+  //   res.json(reservation);
+  // });
+
   app.patch(api.reservations.updateStatus.path, async (req, res) => {
-    const reservation = await storage.updateReservationStatus(Number(req.params.id), req.body.status);
+    const reservation = await storage.updateReservationStatus(
+      Number(req.params.id),
+      req.body.status
+    );
     if (!reservation) return res.status(404).json({ message: "Reservation not found" });
+  
+    // Auto-mark room as dirty when guest checks out
+    if (req.body.status === "checked_out") {
+      storage.upsertHousekeepingTask(reservation.roomId, {
+        status: "dirty",
+        notes: `Auto-flagged after check-out on ${new Date().toLocaleDateString()}`,
+      }).catch(() => {});
+  
+      storage.createNotification({
+        type: "reservation",
+        title: "Room Needs Cleaning",
+        body: `Room for reservation #${reservation.id} was checked out and needs housekeeping.`,
+        isRead: false,
+      }).catch(() => {});
+    }
+  
     res.json(reservation);
   });
 
@@ -249,6 +279,9 @@ export async function registerRoutes(
     res.json({ success: true });
   });
 
+
+
+  
   
 // Create payment intent for a reservation
 app.post("/api/payments/reservation-intent", async (req, res) => {
@@ -320,6 +353,243 @@ app.post("/api/payments/confirm", async (req, res) => {
     res.status(500).json({ message: "Failed to confirm payment" });
   }
 });
+
+// ─── Paystack: Initialize payment ───────────────────────────────────────────
+// Called before opening the popup. Backend initializes so the secret key
+// is never exposed to the browser.
+app.post("/api/paystack/initialize", async (req, res) => {
+  if (!req.isAuthenticated()) return res.sendStatus(401);
+  const { email, amount, metadata } = req.body;
+
+  try {
+    const paystackRes = await fetch("https://api.paystack.co/transaction/initialize", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        amount: Math.round(Number(amount) * 100), // GH₵ → pesewas
+        currency: "GHS",
+        channels: ["mobile_money", "card"],
+        metadata,
+      }),
+    });
+
+    const data = await paystackRes.json() as any;
+    if (!data.status) return res.status(400).json({ message: data.message });
+    res.json({ reference: data.data.reference, access_code: data.data.access_code });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to initialize payment" });
+  }
+});
+
+// ─── Paystack: Verify payment then create reservation ────────────────────────
+app.post("/api/paystack/verify-and-book", async (req, res) => {
+  if (!req.isAuthenticated()) return res.sendStatus(401);
+  const { reference, roomId, userId, checkIn, checkOut, totalPrice } = req.body;
+
+  try {
+    // 1. Verify with Paystack
+    const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+      headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` },
+    });
+    const verifyData = await verifyRes.json() as any;
+
+    if (!verifyData.status || verifyData.data.status !== "success") {
+      return res.status(400).json({ message: "Payment not successful. Please try again." });
+    }
+
+    // 2. Create the reservation now that payment is confirmed
+    const reservation = await storage.createReservation({
+      roomId: Number(roomId),
+      userId: Number(userId),
+      checkIn,
+      checkOut,
+      totalPrice: Number(totalPrice),
+      status: "confirmed",
+      paymentMethod: "mobile_money",
+      paymentReference: reference,
+      paymentStatus: "paid",
+    });
+
+    // 3. In-app notification
+    const user = await storage.getUser(Number(userId));
+    const room = await storage.getRoom(Number(roomId));
+    storage.createNotification({
+      type: "reservation",
+      title: "New Room Reservation (Mobile Money)",
+      body: `${user?.name ?? "A guest"} paid GH₵${totalPrice} via Mobile Money and booked Room ${room?.number ?? roomId} (${new Date(checkIn).toLocaleDateString()} – ${new Date(checkOut).toLocaleDateString()}). Ref: ${reference}`,
+      isRead: false,
+    }).catch(() => {});
+
+    res.status(201).json(reservation);
+  } catch (err: any) {
+    res.status(400).json({ message: err.message ?? "Booking failed after payment" });
+  }
+});
+
+// ─── Paystack: Verify payment then create order ──────────────────────────────
+app.post("/api/paystack/verify-and-order", async (req, res) => {
+  if (!req.isAuthenticated()) return res.sendStatus(401);
+  const { reference, order, items } = req.body;
+
+  try {
+    // 1. Verify with Paystack
+    const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+      headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` },
+    });
+    const verifyData = await verifyRes.json() as any;
+
+    if (!verifyData.status || verifyData.data.status !== "success") {
+      return res.status(400).json({ message: "Payment not successful. Please try again." });
+    }
+
+    // 2. Create the order now that payment is confirmed
+    const newOrder = await storage.createOrder(
+      {
+        ...order,
+        paymentMethod: "mobile_money",
+        paymentReference: reference,
+        paymentStatus: "paid",
+      },
+      items
+    );
+
+    // 3. In-app notification
+    const mItems = await storage.getMenuItems();
+    const orderTypeLabel =
+      newOrder.type === "room_service" ? "Room Service"
+      : newOrder.type === "take_away" ? "Take Away"
+      : "Dine In";
+    const itemSummary = items.map((item: any) => {
+      const mi = mItems.find((m) => m.id === item.menuItemId);
+      return `${mi?.name ?? "Item"} x${item.quantity}`;
+    }).join(", ");
+
+    storage.createNotification({
+      type: "order",
+      title: `New ${orderTypeLabel} Order (Mobile Money)`,
+      body: `Order #${newOrder.id} paid GH₵${newOrder.totalAmount} via Mobile Money. ${itemSummary}. Ref: ${reference}`,
+      isRead: false,
+    }).catch(() => {});
+
+    res.status(201).json(newOrder);
+  } catch (err: any) {
+    res.status(500).json({ message: err.message ?? "Order failed after payment" });
+  }
+});
+
+
+// ─── Housekeeping Routes ─────────────────────────────────────────────────────
+
+app.get("/api/housekeeping", async (req, res) => {
+  if (!req.isAuthenticated()) return res.sendStatus(401);
+  const user = req.user as any;
+  if (!["staff", "manager", "admin"].includes(user.role)) return res.sendStatus(403);
+  const tasks = await storage.getHousekeepingTasks();
+  res.json(tasks);
+});
+
+app.patch("/api/housekeeping/:roomId", async (req, res) => {
+  if (!req.isAuthenticated()) return res.sendStatus(401);
+  const user = req.user as any;
+  if (!["staff", "manager", "admin"].includes(user.role)) return res.sendStatus(403);
+
+  const roomId = Number(req.params.roomId);
+  const { status, notes, assignedTo, scheduledFor } = req.body;
+
+  const task = await storage.upsertHousekeepingTask(roomId, {
+    status,
+    notes,
+    assignedTo: assignedTo ?? null,
+    scheduledFor: scheduledFor ?? null,
+  });
+
+  // Notify when a room is marked clean or inspected
+  if (status === "clean" || status === "inspected") {
+    const room = await storage.getRoom(roomId);
+    storage.createNotification({
+      type: "reservation",
+      title: status === "inspected" ? "Room Inspected & Ready" : "Room Cleaned",
+      body: `Room ${room?.number ?? roomId} has been marked as ${status}.`,
+      isRead: false,
+    }).catch(() => {});
+  }
+
+  res.json(task);
+});
+
+// ─── Maintenance Routes ───────────────────────────────────────────────────────
+
+app.get("/api/maintenance", async (req, res) => {
+  if (!req.isAuthenticated()) return res.sendStatus(401);
+  const user = req.user as any;
+
+  // Staff/admin see all; guests see only their own
+  const requests =
+    ["staff", "manager", "admin"].includes(user.role)
+      ? await storage.getMaintenanceRequests()
+      : await storage.getMaintenanceRequestsByUser(user.id);
+
+  res.json(requests.slice().reverse()); // newest first
+});
+
+app.post("/api/maintenance", async (req, res) => {
+  if (!req.isAuthenticated()) return res.sendStatus(401);
+  const user = req.user as any;
+
+  try {
+    const input = insertMaintenanceRequestSchema.parse(req.body);
+    const request = await storage.createMaintenanceRequest({
+      ...input,
+      reportedById: Number(user.id), // make sure it's a number
+      description: input.description || "", // ensure required field
+      title: input.title || "", // ensure required field
+      roomId: input.roomId ? Number(input.roomId) : undefined,
+      assignedTo: input.assignedTo ? Number(input.assignedTo) : undefined,
+      notes: input.notes,
+      priority: input.priority,
+      status: input.status,
+    });
+
+    // Notify staff of new request
+    const priorityLabel = request.priority === "urgent" ? "🚨 URGENT" : request.priority;
+    storage.createNotification({
+      type: "order",
+      title: `New Maintenance Request [${priorityLabel}]`,
+      body: `"${request.title}" ${request.roomId ? `— Room ${request.roomId}` : "(Common Area)"}. Reported by user #${user.id}.`,
+      isRead: false,
+    }).catch(() => {});
+
+    res.status(201).json(request);
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      res.status(400).json({ message: err.issues[0].message });
+    } else {
+      res.status(500).json({ message: "Failed to create request" });
+    }
+  }
+});
+
+app.patch("/api/maintenance/:id", async (req, res) => {
+  if (!req.isAuthenticated()) return res.sendStatus(401);
+  const user = req.user as any;
+  if (!["staff", "manager", "admin"].includes(user.role)) return res.sendStatus(403);
+
+  const updates: Record<string, any> = { ...req.body };
+
+  // Stamp resolved time when marking resolved
+  if (req.body.status === "resolved") {
+    updates.resolvedAt = new Date();
+  }
+
+  const updated = await storage.updateMaintenanceRequest(Number(req.params.id), updates);
+  if (!updated) return res.status(404).json({ message: "Request not found" });
+  res.json(updated);
+});
+
 
   // Seed data function (simple check)
   async function seed() {
